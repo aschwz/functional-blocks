@@ -611,6 +611,17 @@ export const toolbox = {
       ],
     },
     {
+      kind: 'category',
+      name: 'Functional Builtins',
+      categorystyle: 'list_category',
+      contents: [
+        {
+          kind: 'block',
+          type: 'builtin_map',
+        },
+      ],
+    },
+    {
       kind: 'sep',
     },
     {
