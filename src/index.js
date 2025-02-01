@@ -33,22 +33,32 @@ const ws = Blockly.inject(blocklyDiv, {toolbox});
 ws.registerToolboxCategoryCallback('TYPES_PALETTE', typesFlyoutCallback)
 
 function syncTypes() {
-    var currentBlocks = []
-    console.log(knownTypes)
-    ws.getBlocksByType('defn_type').forEach(b => {
-        var currB = knownTypes.find(known => {known.getFieldValue('TYPENAME') == b.getFieldValue('TYPENAME')})
-        if (currB) {
-            knownTypes = knownTypes.filter(known => {known.getFieldValue('TYPENAME') != b.getFieldValue('TYPENAME')})
-            currentBlocks.push(currB)
-        }
-    })
-    knownTypes = currentBlocks
+    knownTypes = ws.getBlocksByType("defn_type")
+    console.log("kt", knownTypes)
+    // var currentBlocks = []
+    // console.log(knownTypes)
+    // ws.getBlocksByType('defn_type').forEach(b => {
+    //     var currB = knownTypes.find(known => {known.getFieldValue('TYPENAME').toLowerCase() == b.getFieldValue('TYPENAME').toLowerCase()})
+    //     if (currB) {
+    //         knownTypes = knownTypes.filter(known => {known.getFieldValue('TYPENAME').toLowerCase() != b.getFieldValue('TYPENAME').toLowerCase()})
+    //         currentBlocks.push(currB)
+    //     }
+    // })
+    // knownTypes = currentBlocks
     // ensure all knownTypes have impls
     knownTypes.forEach(type => {
-        if (undefined == Blockly.Blocks[`TYPE_${type.getFieldValue('TYPENAME')}`]) {
+        console.log("haiii", type)
+        if (undefined == Blockly.Blocks[`type_${type.getFieldValue('TYPENAME').toLowerCase()}`]) {
             // not found
-            Blockly.Blocks[`TYPE_${type.getFieldValue('TYPENAME')}`] = {
+            Blockly.Blocks[`type_${type.getFieldValue('TYPENAME').toLowerCase()}`] = {
                 init: function() {
+        // this.appendValueInput('T1')
+        //     .setCheck('Type')
+        //     .appendField('Sum')
+        // this.appendValueInput('T2')
+        //     .setCheck('Type')
+        // this.setOutput(true, 'Type')
+        // this.setColour(160)   
                     this.appendDummyInput()
                         .appendField(type.getFieldValue('TYPENAME'));
                     this.setOutput(true, 'Type')
@@ -58,19 +68,19 @@ function syncTypes() {
         }
     })
     // ensure all known impls have blocks
-    Blockly.Blocks.keys().forEach((k) => {
-        if (k.startsWith("TYPE_")) {
-            const name = k.split("TYPE_")[1]
-            if (knownTypes.find(b => b.getFieldValue('TYPENAME') == name) == undefined) {
-                // no!
-                Blockly.Blocks[k].dispose()
-            }
-        }
-    })
+    // Blockly.Blocks.keys().forEach((k) => {
+    //     if (k.startsWith("TYPE_")) {
+    //         const name = k.split("TYPE_")[1]
+    //         if (knownTypes.find(b => b.getFieldValue('TYPENAME') == name) == undefined) {
+    //             // no!
+    //             Blockly.Blocks[k].dispose()
+    //         }
+    //     }
+    // })
     console.log(Blockly.Blocks)
 }
 
-// ws.addChangeListener(syncTypes)
+ws.addChangeListener(syncTypes)
 
 // This function resets the code and output divs, shows the
 // generated code from the workspace, and evals the code.
