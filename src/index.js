@@ -31,7 +31,7 @@ Object.assign(javascriptGenerator.forBlock, forBlock);
 const codeDiv = document.getElementById('generatedCode').firstChild;
 const outputDiv = document.getElementById('output');
 const blocklyDiv = document.getElementById('blocklyDiv');
-const ws = Blockly.inject(blocklyDiv, {toolbox});
+export const ws = Blockly.inject(blocklyDiv, {toolbox});
 
 ws.registerToolboxCategoryCallback('TYPES_PALETTE', typesFlyoutCallback)
 
