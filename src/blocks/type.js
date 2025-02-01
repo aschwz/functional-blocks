@@ -13,7 +13,7 @@ export function typeVarsNames(x) {
 // own custom blocks.
 const defnType = {
     type: 'defn_type',
-    message0: 'define type %1 with %2 as %3',
+    message0: 'define type %1 with %2 as',
     args0: [
         {
             "type": "field_input",
@@ -25,11 +25,11 @@ const defnType = {
             "name": "VARTEXT",
             "text": "no params"
         },
-        {
-            type: 'input_value',
-            name: 'TYPE',
-            check: 'Type',
-        },
+        // {
+        //     type: 'input_value',
+        //     name: 'TYPE',
+        //     check: 'Type',
+        // },
     ],
     // previousStatement: null,
     // nextStatement: null,
@@ -37,8 +37,19 @@ const defnType = {
     tooltip: '',
     helpUrl: '',
     mutator: "type_multiparam_mutator",
-    extraState: {"args": 0},
+    extraState: {"args": 0, "products": 0},
 };
+
+const boolType = {
+    type: 'type_builtin_bool',
+    message0: 'Bool',
+    output: 'Type',
+}
+const floatType = {
+    type: 'type_builtin_float',
+    message0: 'Float',
+    output: 'Type',
+}
 
 const typeParamsContainer = {
     type: 'type_params_container',
@@ -46,12 +57,17 @@ const typeParamsContainer = {
     args0: [{
         "type": "input_statement",
         "name": "STACK"
+    }],
+    message1: 'products %1',
+    args1: [{
+        "type": "input_statement",
+        "name": "STACK2",
     }]
 }
 
 const typeParamsParam = {
     type: 'type_params_param',
-    message0: 'params',
+    message0: 'Unit',
     previousStatement: null,
     nextStatement: null,
     // args0: {
@@ -84,10 +100,11 @@ Blockly.Extensions.registerMutator(
     'type_multiparam_mutator',
     {
         saveExtraState: function() {
-            return {"args": this.args}
+            return {"args": this.args, "products": this.products}
         },
         loadExtraState: function(state) {
             this.args = state["args"]
+            this.products = state["products"]
         },
         decompose: function(workspace) {
             workspace.addTopBl
@@ -101,6 +118,17 @@ Blockly.Extensions.registerMutator(
             //     connection.connect(itemBlock.previousConnection);
             //     connection = itemBlock.nextConnection;
             for (var i = 0; i < this.args; i++) {
+                var itemBlock = workspace.newBlock('type_params_param');
+                itemBlock.initSvg();
+                connection.connect(itemBlock.previousConnection);
+                connection = itemBlock.nextConnection;
+            }
+            connection = topBlock.getInput('STACK2').connection; 
+            // var itemBlock = workspace.newBlock('type_params_param');
+            //     itemBlock.initSvg();
+            //     connection.connect(itemBlock.previousConnection);
+            //     connection = itemBlock.nextConnection;
+            for (var i = 0; i < this.products; i++) {
                 var itemBlock = workspace.newBlock('type_params_param');
                 itemBlock.initSvg();
                 connection.connect(itemBlock.previousConnection);
@@ -124,15 +152,6 @@ Blockly.Extensions.registerMutator(
                     itemBlock.nextConnection.targetBlock();
             }
 
-            // Then we disconnect any children where the sub-block associated with that
-            // child has been deleted/removed from the stack.
-            // for (var i = 0; i < this.args; i++) {
-                // var connection = this.getInput('ADD' + i).connection.targetConnection;
-                // if (connection && connections.indexOf(connection) == -1) {
-                    // connection.disconnect();
-                // }
-            // }
-
             this.args = connections.length
 
             // update max
@@ -146,15 +165,57 @@ Blockly.Extensions.registerMutator(
                 this.setFieldValue(`params ${typeVarsNames(this.args)}`, "VARTEXT")
             }
 
+
+
+            itemBlock = topBlock.getInputTargetBlock('STACK2');
+
+            // Then we collect up all of the connections of on our main block that are
+            // referenced by our sub-blocks.
+            // This relates to the saveConnections hook (explained below).
+            connections = [];
+            while (itemBlock && !itemBlock.isInsertionMarker()) {  // Ignore insertion markers!
+                connections.push(itemBlock.valueConnection_);
+                itemBlock = itemBlock.nextConnection &&
+                    itemBlock.nextConnection.targetBlock();
+            }
+
+            this.products = connections.length
+
+            // Then we disconnect any children where the sub-block associated with that
+            // child has been deleted/removed from the stack.
+            for (var i = 0; i < this.products; i++) {
+                var connection = this.getInput('PROD_' + i)
+                if (connection) {
+                    connection = connection.connection.targetConnection;
+                if (connection && connections.indexOf(connection) == -1) {
+                    connection.disconnect();
+                }
+                }
+            }
+
+
             // // Then we update the shape of our block (removing or adding iputs as necessary).
             // // `this` refers to the main block.
             // this.itemCount_ = connections.length;
             // // this.updateShape_();
+            // Add new inputs.
+            for (let i = 0; i < this.products; i++) {
+                if (!this.getInput('PROD_' + i)) {
+                    const input = this.appendValueInput('PROD_' + i)
+                    // if (i === 0) {
+                        // input.appendField(Msg['LISTS_CREATE_WITH_INPUT_WITH']);
+                    // }
+                }
+            }
+            // Remove deleted inputs.
+            for (let i = this.products; this.getInput('ADD' + i); i++) {
+                this.removeInput('PROD_' + i);
+            }
 
             // // And finally we reconnect any child blocks.
-            // for (var i = 0; i < this.itemCount_; i++) {
-            //     connections[i].reconnect(this, 'ADD' + i);
-            // }
+            for (var i = 0; i < this.itemCount_; i++) {
+                connections[i].reconnect(this, 'PROD_' + i);
+            }
         }
     },
     undefined,
@@ -165,5 +226,5 @@ Blockly.Extensions.registerMutator(
 // This does not register their definitions with Blockly.
 // This file has no side effects!
 export const typeBlocks = Blockly.common.createBlockDefinitionsFromJsonArray([
-    defnType, typeParamsContainer, typeParamsParam
+    defnType, typeParamsContainer, typeParamsParam, boolType, floatType,
 ]);

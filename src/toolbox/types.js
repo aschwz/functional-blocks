@@ -13,6 +13,14 @@ export var typesFlyoutCallback = function(workspace) {
             kind: 'block',
             type: 'sum_type',
         },
+        {
+            kind: 'block',
+            type: 'type_builtin_bool',
+        },
+        {
+            kind: 'block',
+            type: 'type_builtin_float',
+        },
     ];
 
     typeVarsNames(knownVariableTypesCount).forEach(c => {

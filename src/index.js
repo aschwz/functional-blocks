@@ -20,6 +20,8 @@ export var knownTypes = []
 export var knownVariableTypesCount = 0
 export function setKVTC(x) {knownVariableTypesCount = x}
 
+
+
 // Register the blocks and generator with Blockly
 Blockly.common.defineBlocks(blocks);
 Blockly.common.defineBlocks(typeBlocks)
@@ -51,10 +53,12 @@ function syncTypes() {
     // ensure all knownTypes have impls
     knownTypes.forEach(type => {
         console.log("haiii", type)
-        if (undefined == Blockly.Blocks[`type_${type.getFieldValue('TYPENAME').toLowerCase()}`]) {
+        var block = Blockly.Blocks[`type_${type.getFieldValue('TYPENAME').toLowerCase()}`]
+        if (undefined == block) {
             // not found
             Blockly.Blocks[`type_${type.getFieldValue('TYPENAME').toLowerCase()}`] = {
                 init: function() {
+                    this.paramsCount = type.args
         // this.appendValueInput('T1')
         //     .setCheck('Type')
         //     .appendField('Sum')
@@ -64,9 +68,31 @@ function syncTypes() {
         // this.setColour(160)   
                     this.appendDummyInput()
                         .appendField(type.getFieldValue('TYPENAME'));
+                    for (var i = 0; i < type.args; i++) {
+                        this.appendValueInput('TYPE_' + i)
+                            .setCheck('Type')
+                    }
                     this.setOutput(true, 'Type')
                     this.setColour(160)       
                 }
+            }
+        } else {
+            // ensure type count sync
+            if (block.paramsCount != type.args) {
+                // cry.
+                Blockly.Blocks[`type_${type.getFieldValue('TYPENAME').toLowerCase()}`] = {
+                init: function() {
+                    this.paramsCount = type.args
+                    this.appendDummyInput()
+                        .appendField(type.getFieldValue('TYPENAME'));
+                    for (var i = 0; i < type.args; i++) {
+                        this.appendValueInput('TYPE_' + i)
+                            .setCheck('Type')
+                    }
+                    this.setOutput(true, 'Type')
+                    this.setColour(160)       
+                }
+            }
             }
         }
     })

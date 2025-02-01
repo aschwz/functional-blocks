@@ -26,6 +26,35 @@ const defnFunction = {
   helpUrl: '',
 };
 
+const callFunc = {
+    type: 'call_func',
+    message0: 'call func %1 with %2 as %3',
+    args0: [
+        {
+            "type": "field_input",
+            "name": "TYPENAME",
+            "text": "name your type",
+        },
+        {
+            "type": "field_label",
+            "name": "VARTEXT",
+            "text": "no params"
+        },
+        {
+            type: 'input_value',
+            name: 'TYPE',
+            check: 'Type',
+        },
+    ],
+    // previousStatement: null,
+    // nextStatement: null,
+    colour: 160,
+    tooltip: '',
+    helpUrl: '',
+    mutator: "type_multiparam_mutator",
+    extraState: {"args": 0},
+};
+
 // Create the block definitions for the JSON-only blocks.
 // This does not register their definitions with Blockly.
 // This file has no side effects!
