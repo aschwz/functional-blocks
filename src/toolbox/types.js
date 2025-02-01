@@ -1,6 +1,7 @@
-import { knownTypes } from "..";
+import { knownTypes, knownVariableTypesCount } from "..";
 
 import * as Blockly from 'blockly';
+import { typeVarsNames } from "../blocks/type";
 export var typesFlyoutCallback = function(workspace) {
   // Returns an array of hex colours, e.g. ['#4286f4', '#ef0447']
   var blockList = [
@@ -13,6 +14,13 @@ export var typesFlyoutCallback = function(workspace) {
             type: 'sum_type',
         },
     ];
+
+    typeVarsNames(knownVariableTypesCount).forEach(c => {
+        blockList.push({
+            kind: 'block',
+            type: 'type_param_' + c
+        })
+    })
     
     console.log(Blockly.Blocks)
     knownTypes.forEach(x => blockList.push({

@@ -17,7 +17,8 @@ import { builtinFns } from './blocks/builtinFns';
 import { functionBlocks } from './blocks/procedures';
 
 export var knownTypes = []
-export var knownTypeImpls = {}
+export var knownVariableTypesCount = 0
+export function setKVTC(x) {knownVariableTypesCount = x}
 
 // Register the blocks and generator with Blockly
 Blockly.common.defineBlocks(blocks);
