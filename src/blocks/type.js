@@ -107,7 +107,6 @@ Blockly.Extensions.registerMutator(
             this.products = state["products"]
         },
         decompose: function(workspace) {
-            workspace.addTopBl
             var topBlock = workspace.newBlock('type_params_container');
             topBlock.initSvg();
 
@@ -208,7 +207,7 @@ Blockly.Extensions.registerMutator(
                 }
             }
             // Remove deleted inputs.
-            for (let i = this.products; this.getInput('ADD' + i); i++) {
+            for (let i = this.products; this.getInput('PROD_' + i); i++) {
                 this.removeInput('PROD_' + i);
             }
 

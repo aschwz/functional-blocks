@@ -646,12 +646,13 @@ export const toolbox = {
       kind: 'category',
       name: 'Functions',
       categorystyle: 'procedure_category',
-      contents: [
-        {
-          kind: 'block',
-          type: 'defn_function',
-        },
-      ],
+      // contents: [
+      //   {
+      //     kind: 'block',
+      //     type: 'defn_function',
+      //   },
+      // ],
+      custom: 'FUNCS_PALETTE'
     },
     {
       kind: 'category',

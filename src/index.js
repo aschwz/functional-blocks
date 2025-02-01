@@ -15,11 +15,15 @@ import { typesFlyoutCallback } from './toolbox/types';
 import './index.css';
 import { builtinFns } from './blocks/builtinFns';
 import { functionBlocks } from './blocks/procedures';
+import { funcsFlyoutCallback } from './toolbox/funcs';
 
 export var knownTypes = []
+export var knownFuncs = []
 export var knownVariableTypesCount = 0
 export function setKVTC(x) {knownVariableTypesCount = x}
 
+export var knownVariableFuncsCount = 0
+export function setKVFC(x) {knownVariableFuncsCount = x}
 
 
 // Register the blocks and generator with Blockly
@@ -36,36 +40,21 @@ const blocklyDiv = document.getElementById('blocklyDiv');
 export const ws = Blockly.inject(blocklyDiv, {toolbox});
 
 ws.registerToolboxCategoryCallback('TYPES_PALETTE', typesFlyoutCallback)
+ws.registerToolboxCategoryCallback('FUNCS_PALETTE', funcsFlyoutCallback)
 
 function syncTypes() {
     knownTypes = ws.getBlocksByType("defn_type")
-    console.log("kt", knownTypes)
-    // var currentBlocks = []
-    // console.log(knownTypes)
-    // ws.getBlocksByType('defn_type').forEach(b => {
-    //     var currB = knownTypes.find(known => {known.getFieldValue('TYPENAME').toLowerCase() == b.getFieldValue('TYPENAME').toLowerCase()})
-    //     if (currB) {
-    //         knownTypes = knownTypes.filter(known => {known.getFieldValue('TYPENAME').toLowerCase() != b.getFieldValue('TYPENAME').toLowerCase()})
-    //         currentBlocks.push(currB)
-    //     }
-    // })
-    // knownTypes = currentBlocks
+    knownFuncs = ws.getBlocksByType("defn_function")
+
     // ensure all knownTypes have impls
     knownTypes.forEach(type => {
-        console.log("haiii", type)
         var block = Blockly.Blocks[`type_${type.getFieldValue('TYPENAME').toLowerCase()}`]
         if (undefined == block) {
             // not found
             Blockly.Blocks[`type_${type.getFieldValue('TYPENAME').toLowerCase()}`] = {
                 init: function() {
                     this.paramsCount = type.args
-        // this.appendValueInput('T1')
-        //     .setCheck('Type')
-        //     .appendField('Sum')
-        // this.appendValueInput('T2')
-        //     .setCheck('Type')
-        // this.setOutput(true, 'Type')
-        // this.setColour(160)   
+
                     this.appendDummyInput()
                         .appendField(type.getFieldValue('TYPENAME'));
                     for (var i = 0; i < type.args; i++) {
@@ -96,17 +85,22 @@ function syncTypes() {
             }
         }
     })
-    // ensure all known impls have blocks
-    // Blockly.Blocks.keys().forEach((k) => {
-    //     if (k.startsWith("TYPE_")) {
-    //         const name = k.split("TYPE_")[1]
-    //         if (knownTypes.find(b => b.getFieldValue('TYPENAME') == name) == undefined) {
-    //             // no!
-    //             Blockly.Blocks[k].dispose()
-    //         }
-    //     }
-    // })
-    console.log(Blockly.Blocks)
+    knownFuncs.forEach(type => {
+        var block = Blockly.Blocks[`func_${type.getFieldValue('FUNCTIONNAME').toLowerCase()}`]
+        if (undefined == block) {
+            // not found
+            Blockly.Blocks[`func_${type.getFieldValue('FUNCTIONNAME').toLowerCase()}`] = {
+                init: function() {
+                    this.paramsCount = type.args
+
+                    this.appendDummyInput()
+                        .appendField(type.getFieldValue('FUNCTIONNAME'));
+                    this.setOutput(true, 'Value')
+                    this.setColour(160)       
+                }
+            }
+        }
+    })
 }
 
 ws.addChangeListener(syncTypes)
