@@ -6,7 +6,7 @@ import * as Blockly from 'blockly/core';
 // own custom blocks.
 const mapFn = {
   type: 'builtin_map',
-  message0: 'map with %1 on %2',
+  message0: 'map with %1 over %2',
   args0: [
     {
       type: 'input_value',
@@ -21,6 +21,76 @@ const mapFn = {
   ],
   // previousStatement: null,
   // nextStatement: null,
+  output: "Value",
+  colour: 160,
+  tooltip: 'Takes a function and map over every element in the given list',
+  helpUrl: '',
+};
+
+const filterFn = {
+  type: "builtin_filter",
+  message0: "filter with %1 over %2",
+  args0: [
+    {
+      type: 'input_value',
+      name: 'FUN1',
+      check: 'Value',
+    },
+    {
+      type: 'input_value',
+      name: 'FUN2',
+      check: 'Value',
+    },
+  ],
+  // previousStatement: null,
+  // nextStatement: null,
+  output: "Value",
+  colour: 160,
+  tooltip: '',
+  helpUrl: '',
+};
+
+const foldrFn = {
+  type: 'builtin_foldr',
+  message0: 'foldr with %1 and base %2 over %3',
+  args0: [
+    {
+      type: 'input_value',
+      name: 'FUN1',
+      check: 'Value',
+    },
+    {
+      type: 'input_value',
+      name: 'FUN2',
+      check: 'Value',
+    },
+    {
+      type: 'input_value',
+      name: 'FUN3',
+      check: 'Value',
+    },
+  ],
+  // previousStatement: null,
+  // nextStatement: null,
+  output: "Value",
+  colour: 160,
+  tooltip: '',
+  helpUrl: '',
+};
+
+const reverseFn = {
+  type: 'builtin_reverse',
+  message0: 'reverse %1',
+  args0: [
+    {
+      type: 'input_value',
+      name: 'FUN1',
+      check: 'Value',
+    },
+  ],
+  // previousStatement: null,
+  // nextStatement: null,
+  output: "Value",
   colour: 160,
   tooltip: '',
   helpUrl: '',
@@ -31,4 +101,7 @@ const mapFn = {
 // This file has no side effects!
 export const builtinFns = Blockly.common.createBlockDefinitionsFromJsonArray([
   mapFn,
+  filterFn,
+  foldrFn,
+  reverseFn,
 ]);

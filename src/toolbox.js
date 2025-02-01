@@ -619,6 +619,18 @@ export const toolbox = {
           kind: 'block',
           type: 'builtin_map',
         },
+        {
+          kind: 'block',
+          type: 'builtin_filter',
+        },
+        {
+          kind: 'block',
+          type: 'builtin_foldr',
+        },
+        {
+          kind: 'block',
+          type: 'builtin_reverse',
+        }
       ],
     },
     {
