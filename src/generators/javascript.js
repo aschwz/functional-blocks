@@ -50,3 +50,21 @@ forBlock['defn_type'] = function (block, generator) {
     // const text = generator.valueToCode(block, 'TYPENAME', Order.NONE) || '';
     return `// Type: ${typeName}`
 }
+
+forBlock['defn_function'] = function (block, generator) {
+  knownTypes.push(block)
+  const functionName = block.getFieldValue('FUNCTIONNAME')
+  Blockly.Blocks["function_" + functionName] = {
+      init: function() {
+          this.appendValueInput('T1')
+              .setCheck('Function')
+              .appendField('Sum')
+          this.appendValueInput('T2')
+              .setCheck('Function')
+          this.setOutput(true, 'Function')
+          this.setColour(160)       
+      }
+  }
+  // const text = generator.valueToCode(block, 'TYPENAME', Order.NONE) || '';
+  return `function ${functionName}() {}`
+}
