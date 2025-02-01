@@ -96,6 +96,32 @@ const reverseFn = {
   helpUrl: '',
 };
 
+const zipWithFn = {
+  type: 'builtin_zipWith',
+  message0: 'zipWith %1 over %2 and %3',
+  args0: [
+    {
+      type: 'input_value',
+      name: 'FUN1',
+      check: 'Value',
+    },
+    {
+      type: 'input_value',
+      name: 'FUN2',
+      check: 'Value',
+    },
+    {
+      type: 'input_value',
+      name: 'FUN3',
+      check: 'Value',
+    },
+  ],
+  output: "Value",
+  colour: 160,
+  tooltip: '',
+  helpUrl: '',
+}
+
 // Create the block definitions for the JSON-only blocks.
 // This does not register their definitions with Blockly.
 // This file has no side effects!
@@ -104,4 +130,5 @@ export const builtinFns = Blockly.common.createBlockDefinitionsFromJsonArray([
   filterFn,
   foldrFn,
   reverseFn,
+  zipWithFn,
 ]);
