@@ -6,10 +6,7 @@ export default function Blockly() {
   const [currStep, setCurrStep] = useState<number>(0)
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    import('./index.js')
-    // @ts-check
+    import('./index')
     setNumSteps(20)
   }, [])
 
