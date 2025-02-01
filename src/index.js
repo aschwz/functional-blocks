@@ -14,6 +14,7 @@ import {toolbox} from './toolbox';
 import { typesFlyoutCallback } from './toolbox/types';
 import './index.css';
 import { builtinFns } from './blocks/builtinFns';
+import { functionBlocks } from './blocks/procedures';
 
 export var knownTypes = []
 export var knownTypeImpls = {}
@@ -22,6 +23,7 @@ export var knownTypeImpls = {}
 Blockly.common.defineBlocks(blocks);
 Blockly.common.defineBlocks(typeBlocks)
 Blockly.common.defineBlocks(builtinFns)
+Blockly.common.defineBlocks(functionBlocks)
 Object.assign(javascriptGenerator.forBlock, forBlock);
 
 // Set up UI elements and inject Blockly
