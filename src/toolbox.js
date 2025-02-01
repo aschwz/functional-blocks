@@ -630,7 +630,11 @@ export const toolbox = {
         {
           kind: 'block',
           type: 'builtin_reverse',
-        }
+        },
+        {
+          kind: 'block',
+          type: 'builtin_zipWith',
+        },
       ],
     },
     {
