@@ -13,6 +13,7 @@ import {save, load} from './serialization';
 import {toolbox} from './toolbox';
 import { typesFlyoutCallback } from './toolbox/types';
 import './index.css';
+import { builtinFns } from './blocks/builtinFns';
 
 export var knownTypes = []
 export var knownTypeImpls = {}
@@ -20,6 +21,7 @@ export var knownTypeImpls = {}
 // Register the blocks and generator with Blockly
 Blockly.common.defineBlocks(blocks);
 Blockly.common.defineBlocks(typeBlocks)
+Blockly.common.defineBlocks(builtinFns)
 Object.assign(javascriptGenerator.forBlock, forBlock);
 
 // Set up UI elements and inject Blockly
@@ -43,11 +45,32 @@ function syncTypes() {
     knownTypes = currentBlocks
     // ensure all knownTypes have impls
     knownTypes.forEach(type => {
-        // if (knownTypeImpls.find({known => }))
+        if (undefined == Blockly.Blocks[`TYPE_${type.getFieldValue('TYPENAME')}`]) {
+            // not found
+            Blockly.Blocks[`TYPE_${type.getFieldValue('TYPENAME')}`] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField(type.getFieldValue('TYPENAME'));
+                    this.setOutput(true, 'Type')
+                    this.setColour(160)       
+                }
+            }
+        }
     })
+    // ensure all known impls have blocks
+    Blockly.Blocks.keys().forEach((k) => {
+        if (k.startsWith("TYPE_")) {
+            const name = k.split("TYPE_")[1]
+            if (knownTypes.find(b => b.getFieldValue('TYPENAME') == name) == undefined) {
+                // no!
+                Blockly.Blocks[k].dispose()
+            }
+        }
+    })
+    console.log(Blockly.Blocks)
 }
 
-ws.addChangeListener(syncTypes)
+// ws.addChangeListener(syncTypes)
 
 // This function resets the code and output divs, shows the
 // generated code from the workspace, and evals the code.
