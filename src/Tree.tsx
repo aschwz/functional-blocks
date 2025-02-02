@@ -50,14 +50,36 @@ export default function Tree({
         {root
           .descendants()
           .filter((node) => !node.data.dummy)
-          .map((node, i) => (
-            <g key={i} transform={`translate(${node.x},${node.y})`}>
-              <circle r={10} fill="white" stroke="black" />
-              <text textAnchor="middle" alignment-baseline="central">
-                {node.data.name}
-              </text>
-            </g>
-          ))}
+          .map((node, i) => {
+            const textLength = node.data.name.length;
+            const padding = 8; // Horizontal padding
+            const fontSize = Math.min(14, 14 - textLength * 0.2);
+            const textWidth = textLength * fontSize * 0.6; // Approximate text width
+            const rectWidth = textWidth + padding * 2;
+            const rectHeight = fontSize * 2; // Height based on font size
+            
+            return (
+              <g key={i} transform={`translate(${node.x},${node.y})`}>
+                <rect
+                  x={-rectWidth/2}
+                  y={-rectHeight/2}
+                  width={rectWidth}
+                  height={rectHeight}
+                  rx="5"  // Rounded corner radius
+                  fill="white"
+                  stroke="black"
+                  strokeWidth={1.5}
+                />
+                <text
+                  textAnchor="middle"
+                  alignmentBaseline="central"
+                  fontSize={fontSize}
+                >
+                  {node.data.name}
+                </text>
+              </g>
+            );
+          })}
       </g>
     </svg>
   )
