@@ -1,6 +1,4 @@
-import * as Blockly from 'blockly/core';
-
-class Tree {
+export class Tree {
     readonly value: any;
     readonly children: Tree[]
 
@@ -9,7 +7,7 @@ class Tree {
         this.children = children
     }
 
-    public evaluate() {
+    public evaluate(): any {
         if (typeof this.value === 'function') {
             return this.value(...this.children.flatMap(this.evaluate))
         }

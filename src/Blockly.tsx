@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { Slider } from 'antd'
 import { compile, run, setup } from './index'
 import Tree from './Tree'
-
 export default function Blockly() {
   const [numSteps, setNumSteps] = useState<number>(0)
   const [currStep, setCurrStep] = useState<number>(0)
