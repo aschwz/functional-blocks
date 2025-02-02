@@ -16,8 +16,9 @@ import { builtinFns } from './blocks/builtinFns';
 import { functionBlocks } from './blocks/procedures';
 import { funcsFlyoutCallback } from './toolbox/funcs';
 import { genCodeFor } from './generators/genFir';
-import { addToEnv, Env, env, Force, forcedMain, renderState, resetEnv, setupForcedMain } from './generators/fir';
+import { addToEnv, Env, env, Force, forcedMain, prevStates, psPtr, renderState, resetEnv, setPsPtr, setupForcedMain } from './generators/fir';
 import * as Save from './save'
+import * as _ from 'lodash'
 
 Blockly.serialization.registry.register(
     "types_and_ctors",
@@ -81,13 +82,25 @@ export function compile() {
 }
 export function run() {
     console.log("Running")
-    if (!forcedMain.isEvaluated()) {
+
+    if (psPtr < prevStates.length-1) {
+        setPsPtr(psPtr + 1)
+    }   
+    else { //  if (!forcedMain.isEvaluated()) {
         forcedMain.evalOne();
+        setPsPtr(psPtr + 1)
+        console.log("oh duck")
+        prevStates.push(_.clone(env))
     }
-    // broken
+   // broken
     if ((new Force(forcedMain.value.func)).isEvaluated()) {
         console.log("I'm done.")
     }
+    renderState()
+}
+
+export function doTimeTravel(n) {
+    setPsPtr(n)
     renderState()
 }
 
@@ -95,6 +108,8 @@ function syncTypes() {
     console.log("sync-types")
     knownTypes = ws.getBlocksByType("defn_type")
     knownFuncs = ws.getBlocksByType("defn_function")
+
+    console.log(knownFuncs, knownTypes)
 
     // ensure all knownTypes have impls
     knownTypes.forEach(type => {

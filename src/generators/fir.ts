@@ -1,4 +1,6 @@
+import clone from 'just-clone'
 import { Node } from '../Tree'
+import * as _ from 'lodash'
 
 export class Env {
     values: Map<String, Value>[] = [new Map()]
@@ -33,6 +35,10 @@ export class Env {
     }
 }
 
+export var prevStates: Env[] = []
+export var psPtr = 0
+export function setPsPtr(x) {psPtr = x}
+
 var tlEnvs: string[] = []
 
 export var env = new Env()
@@ -41,9 +47,13 @@ export var forcedMain = null
 
 export function resetEnv() {
     env = new Env()
+    prevStates = []
 }
 export function setupForcedMain() {
     forcedMain = new Force(env.lookup("main"))
+    prevStates.push(_.clone(env))
+    console.log("EE", env)
+    tlEnvs = []
     for (var k of env.values[0].keys()) {
         tlEnvs.push(k)
     }
@@ -52,9 +62,15 @@ export function addToEnv(k, v) {env.set(k, v)}
 
 export function renderState(): Node[] {
     // eventually this will render this nicely but i eepy
-    console.log("Rendering state:", env)
+    console.log(prevStates, psPtr)
+    console.log("Rendering state:", prevStates[psPtr])
     // broken but objectibely funny
-    return tlEnvs.map(x => env.reverseLookup(x).asNode())
+    console.log("TLE", tlEnvs)
+    var aaa = tlEnvs.map(x => {
+        return {name: x, children: [prevStates[psPtr].reverseLookup(x).asNode()]}
+    })
+    console.log("aaa", aaa)
+    return aaa
 }
 
 class FIRNode {
@@ -308,7 +324,7 @@ export class InherentFun extends Value {
 }
 
 
-class Lit extends Value {
+export class Lit extends Value {
     data: any
 
     constructor(data: any) {

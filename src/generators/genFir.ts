@@ -1,6 +1,4 @@
-import {Deconstruct, DeconOption, DataValue, Call, Var, InherentFun} from "./fir.ts"
-
-var perBlock = {}
+import {Deconstruct, DeconOption, DataValue, Call, Var, InherentFun, Lit} from "./fir.ts"
 
 export function genCodeFor(block) {
     var ty = block.type
@@ -104,9 +102,10 @@ export function genCodeFor(block) {
         console.log("variable", name)
         return new Var(name)
     }
-    else {
-        alert("I cannot compile " + ty)
-        throw new Error()
+    if (ty == "math_number") {
+        return new Lit(ty.getFieldValue("NUM"))
     }
+    alert("I cannot compile " + ty)
+    throw new Error()
 }
 
