@@ -38,22 +38,13 @@ export function setKVFC(x) {knownVariableFuncsCount = x}
 
 export var ws = null 
 
-var isSetupRun = false
 // since we import to react for compile and run, we need to delegate things
-export function setup() {
-    if (isSetupRun) return
-    isSetupRun = true
-
+export function setup(blocklyDiv) {
     // Register the blocks and generator with Blockly
     Blockly.common.defineBlocks(typeBlocks)
     Blockly.common.defineBlocks(builtinFns)
     Blockly.common.defineBlocks(functionBlocks)
     Object.assign(javascriptGenerator.forBlock, forBlock);
-
-    // Set up UI elements and inject Blockly
-    const codeDiv = document.getElementById('generatedCode').firstChild;
-    const outputDiv = document.getElementById('output');
-    const blocklyDiv = document.getElementById('blocklyDiv');
 
     ws = Blockly.inject(blocklyDiv, {toolbox})
 
