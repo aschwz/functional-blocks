@@ -52,7 +52,7 @@ export function resetEnv() {
 export function setupForcedMain() {
     forcedMain = new Force(env.lookup("main"))
     env.values[0].set("main", forcedMain)
-    prevStates.push(_.clone(env))
+    prevStates.push(_.cloneDeep(env))
     console.log("EE", env)
     tlEnvs = []
     for (var k of env.values[0].keys()) {

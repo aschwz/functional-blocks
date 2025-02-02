@@ -91,7 +91,7 @@ export function run() {
         forcedMain.evalOne();
         setPsPtr(psPtr + 1)
         console.log("oh duck")
-        prevStates.push(_.clone(env))
+        prevStates.push(_.cloneDeep(env))
     }
    // broken
     if ((new Force(forcedMain.value.func)).isEvaluated()) {
