@@ -45,6 +45,10 @@ export var typesFlyoutCallback = function(workspace) {
             kind: 'block',
             type: "type_decon_" + x.getFieldValue("TYPENAME")
         })
+        blockList.push({
+            kind: 'block',
+            type: "type_constr_" + x.getFieldValue("TYPENAME")
+        })
     });
   return blockList;
 };

@@ -33,14 +33,16 @@ export function genCodeFor(block) {
             var variableNames = []
             binds.forEach(bind => {
                 // bind is a variable, all I have to do is get the name out of it somehow
-                console.log("BIND: ", bind)
-                // variableNames.push(the name once I get it)
+                var varName = bind.getField("VAR").selectedOption[0]
+                variableNames.push(varName)
             })
 
             const branch = new DeconOption(from, variableNames, final)
             paths.push(branch)
         })
-        return new Deconstruct(valueToDeconstruct, paths)
+        var decon = new Deconstruct(valueToDeconstruct, paths)
+        console.log("DECON BABEY", decon)
+        return decon
     }
 }
 

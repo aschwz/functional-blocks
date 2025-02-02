@@ -6,7 +6,7 @@
 
 import * as Blockly from 'blockly';
 import {blocks} from './blocks/text';
-import { genericTypeDeconstructor, typeBlocks } from './blocks/type';
+import { genericDataConstructor, genericTypeDeconstructor, typeBlocks } from './blocks/type';
 import {forBlock} from './generators/javascript';
 import {javascriptGenerator} from 'blockly/javascript';
 import {save, load} from './serialization';
@@ -51,9 +51,11 @@ function syncTypes() {
 
     // ensure all knownTypes have impls
     knownTypes.forEach(type => {
-            
+
         console.log("TYP", type)
         genericTypeDeconstructor(type)
+        genericDataConstructor(type)
+        // type universe type constuctor
         var block = Blockly.Blocks[`type_${type.getFieldValue('TYPENAME').toLowerCase()}`]
         if (undefined == block) {
             // not found
@@ -76,18 +78,18 @@ function syncTypes() {
             if (block.paramsCount != type.args) {
                 // cry.
                 Blockly.Blocks[`type_${type.getFieldValue('TYPENAME').toLowerCase()}`] = {
-                init: function() {
-                    this.paramsCount = type.args
-                    this.appendDummyInput()
-                        .appendField(type.getFieldValue('TYPENAME'));
-                    for (var i = 0; i < type.args; i++) {
-                        this.appendValueInput('TYPE_' + i)
-                            .setCheck('Type')
+                    init: function() {
+                        this.paramsCount = type.args
+                        this.appendDummyInput()
+                            .appendField(type.getFieldValue('TYPENAME'));
+                        for (var i = 0; i < type.args; i++) {
+                            this.appendValueInput('TYPE_' + i)
+                                .setCheck('Type')
+                        }
+                        this.setOutput(true, 'Type')
+                        this.setColour(160)       
                     }
-                    this.setOutput(true, 'Type')
-                    this.setColour(160)       
                 }
-            }
             }
         }
     })
@@ -95,6 +97,7 @@ function syncTypes() {
         var block = Blockly.Blocks[`func_${type.getFieldValue('FUNCTIONNAME').toLowerCase()}`]
         if (undefined == block) {
             // not found
+            // functions as values
             Blockly.Blocks[`func_${type.getFieldValue('FUNCTIONNAME').toLowerCase()}`] = {
                 init: function() {
                     this.paramsCount = type.args

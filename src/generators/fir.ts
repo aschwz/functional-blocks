@@ -20,17 +20,19 @@ class Env {
     }
 }
 
+var env = new Env()
+
 class FIRNode {
     
 }
 
 class Value extends FIRNode {
-    evalOne(e: Env): Value {return new NullValue()}
-    isEvaluated(): boolean {return true}
+    evalOne(): Value {return new NullValue()}
+    isEvaluated(): boolean {throw Error("aaa")}
 }
 
 class NullValue extends Value {
-    evalOne(e: Env): Value {
+    evalOne(): Value {
         alert("Attempt to evaluate a NullValue!!! Your code is Bad.")
         throw new Error()
     }
@@ -43,7 +45,7 @@ class App extends Value {
     target: Value
     args: Value[]
 
-    evalOne(e: Env): Value {
+    evalOne(): Value {
         
         return new NullValue()
     }
@@ -63,8 +65,8 @@ class Var extends Value {
         this.name = name
     }
 
-    evalOne(e: Env): Value {
-        return e.lookup(this.name)
+    evalOne(): Value {
+        return env.lookup(this.name)
     }
 }
 
@@ -88,11 +90,18 @@ export class DeconOption {
     into: string[]
     to: Value
 
-    evalOne(e: Env, inp: DataValue) {
-        this.to.evalOne(e)
+    evalOne(inp: DataValue): Value {
+        env.pushFrame()
         for (var i = 0; i < max(this.into.length, inp.values.length); i++) {
-            e.set(this.into[i], inp.values[i])
+            env.set(this.into[i], inp.values[i])
         }
+        var evaluated = this.to.evalOne()
+        env.popFrame()
+        return evaluated
+    }
+
+    isEvaluated() {
+        return this.to.isEvaluated()
     }
 
     constructor(nameMatch: string, into: string[], to: Value) {
@@ -110,10 +119,85 @@ export class Deconstruct extends Value {
         this.from = from
         this.options = opts
     }
+
+    chosenOpt: DeconOption | null = null
+
+    isEvaluated(): boolean {
+        if (this.chosenOpt != null) {
+            return this.chosenOpt.isEvaluated()
+        }
+        return false
+    }
+
+    evalOne(): Value {
+        if (!this.from.isEvaluated()) {
+            this.from.evalOne()
+            return this
+        } else {
+            if (this.from instanceof DataValue) {
+                const deconOpt = this.options.find(opt => opt.nameMatch == (this.from as DataValue).name)
+                if (deconOpt != undefined) {
+                    return deconOpt.evalOne((this.from as DataValue))
+                } else {
+                    alert("Deconstruct didn't match")
+                    throw Error()
+                }
+            } else {
+                alert("Deconstruct called on non-datatype")
+                throw Error()
+            }
+        }
+    }
 }
 
+const alpha = "abcdefghijklmnopqrstuvwxyz"
+
 class Fun extends Value {
-    body: Value[]
+    // params: number
+    body: Value
+
+    constructor(params: number, body: Value) {
+        super()
+        // this.params = params
+        this.body = body
+    }
+
+    evalOne() {
+        return this.body.evalOne()
+    }
+    isEvaluated(): boolean {
+        return this.body.isEvaluated()
+    }
+}
+
+class Call extends Value {
+    func: string
+    params: Value[]
+    constructor(func: string, params: Value[]) {
+        super()
+        this.func = func
+        this.params = params
+    }
+    evalOne(): Value {
+        var toEval = env.lookup(this.func)
+        env.pushFrame()
+        for (var i = 0; i < this.params.length; i++) {
+            env.set(alpha[i], this.params[i])
+        }
+        const evaled = toEval.evalOne()
+        env.popFrame()
+        return evaled
+    }
+    isEvaluated(): boolean {
+        var toEval = env.lookup(this.func)
+        env.pushFrame()
+        for (var i = 0; i < this.params.length; i++) {
+            env.set(alpha[i], this.params[i])
+        }
+        const evaled = toEval.isEvaluated()
+        env.popFrame()
+        return evaled
+    }
 }
 
 class FlatValue {}
@@ -130,7 +214,7 @@ class InherentFun extends Callable {
         this.body = fun
     }
 
-    // evalOne(e: Env)
+    // evalOne()
 }
 
 class DataType extends Value {

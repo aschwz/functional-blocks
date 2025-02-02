@@ -129,6 +129,22 @@ export function genericTypeDeconstructor(ty) {
     }
 }
 
+export function genericDataConstructor(ty) {
+    var tyName = ty.getFieldValue("TYPENAME")
+    var numProds = ty.products
+    Blockly.Blocks["type_constr_" + tyName] = {
+        init: function() {
+            this.deconTyName = tyName
+            this.appendDummyInput()
+                .appendField("Construct " + tyName + " from")
+            for (var i = 0; i < numProds; i++) {
+                this.appendValueInput('I_' + i)
+            }
+            this.setOutput(true)
+        }
+    }
+}
+
 Blockly.Extensions.registerMutator(
     'type_multiparam_mutator',
     {
