@@ -35,8 +35,8 @@ export default function Blockly() {
                 {
                   name: ':',
                   children: [
-                    { name: '2' },
-                    { name: ':', children: [{ name: '4' }, { name: '5' }] },
+                    { name: '2432423423' },
+                    { name: ':', children: [{ name: '423321412' }, { name: '53252353523' }] },
                   ],
                 },
               ],
