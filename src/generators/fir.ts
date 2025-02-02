@@ -197,6 +197,21 @@ export class Call extends Value {
         this.params = params
     }
     evalOne(): Value {
+        // special case: if this is an inherent fn then this needs to be strict
+        if (this.func instanceof InherentFun) {
+            // eval args first
+            for (var i = 0; i < this.params.length; i++) {
+                if (!this.params[i].isEvaluated()) {
+                    this.params[i] = this.params[i].evalOne()
+                    return this
+                } else {
+                    if (this.params[i] !instanceof Lit) {
+                        throw Error("Can't inherent on a non-lit")
+                    }
+                }
+                // they're all lit
+            }
+        }
         if (this.func.isEvaluated()) {
             return this.func
         }
@@ -224,19 +239,17 @@ export class Call extends Value {
     }
 }
 
-class FlatValue {}
 
-class Callable {
-    call(...args: FlatValue[]): any {}
-}
-
-class InherentFun extends Callable {
+class InherentFun extends Value {
     body: (...args: any[]) => any
 
     constructor(fun: (...args: any[]) => any) {
         super()
         this.body = fun
     }
+
+    isEvaluated() {return true}
+    evalOne() {return this}
 
     // evalOne()
 }
