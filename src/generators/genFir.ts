@@ -1,4 +1,4 @@
-import {Deconstruct, DeconOption, DataValue, Call, Var} from "./fir.ts"
+import {Deconstruct, DeconOption, DataValue, Call, Var, InherentFun} from "./fir.ts"
 
 var perBlock = {}
 
@@ -44,6 +44,24 @@ export function genCodeFor(block) {
         console.log("DECON BABEY", decon)
         return decon
     }
+    if (ty == "math_arithmetic") {
+        console.log(block)
+        const op = block.getField("OP").selectedOption[0]
+        if (op == "+") {
+            return InherentFun((x, y) => (x + y))
+        }
+        if (op == "-") {
+            return InherentFun((x, y) => (x + y))
+        }
+        if (op == "*") {
+            return InherentFun((x, y) => (x * y))
+        }
+        if (op == "/") {
+            return InherentFun((x, y) => (x / y))
+        }
+        alert("I can't handle the operator " + op)
+        throw Error()
+    }
     if (ty == "call_func") {
         const target = genCodeFor(block.getInputTargetBlock("FUNCTION"))
         var args = []
@@ -80,7 +98,6 @@ export function genCodeFor(block) {
             a0 = block.getInputTargetBlock("I_" + n)
         }
         return new DataValue(pName, values)
-
     }
     else {
         alert("I cannot compile " + ty)

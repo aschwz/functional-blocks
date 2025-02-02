@@ -209,8 +209,10 @@ export class Call extends Value {
                         throw Error("Can't inherent on a non-lit")
                     }
                 }
-                // they're all lit
             }
+            // they're all lit
+            var values = this.params.map(v => (v as Lit).data)
+            return this.func.body(...values)
         }
         if (this.func.isEvaluated()) {
             return this.func
@@ -240,7 +242,7 @@ export class Call extends Value {
 }
 
 
-class InherentFun extends Value {
+export class InherentFun extends Value {
     body: (...args: any[]) => any
 
     constructor(fun: (...args: any[]) => any) {
@@ -256,7 +258,6 @@ class InherentFun extends Value {
 
 
 class Lit extends Value {
-
     data: any
 
     constructor(data: any) {
@@ -264,7 +265,6 @@ class Lit extends Value {
         this.data = data
     }
     isEvaluated(): boolean {return true}
-
 }
 
 
