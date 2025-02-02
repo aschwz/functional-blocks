@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Slider } from 'antd'
 import { compile, doTimeTravel, run, setup } from './index'
 import Tree, {Node} from './Tree'
-import { prevStates, psPtr, renderState } from './generators/fir'
+import { prevStates, psPtr, renderState, setPsPtr } from './generators/fir'
 
 export default function Blockly() {
   const [numSteps, setNumSteps] = useState<number>(0)
@@ -27,10 +27,10 @@ export default function Blockly() {
   const handleRun = () => {
     console.log('Run clicked');
     run()
-    setCurrGraph(renderState())
     console.log(prevStates.length)
         setNumSteps(prevStates.length - 1)
         setCurrStep(psPtr)
+        setCurrGraph(renderState())
   };
 
   const timeTravel = (n: number) => {
@@ -38,6 +38,12 @@ export default function Blockly() {
         setCurrStep(n)
         doTimeTravel(n)
     }
+
+  const setStep = (n: number) => {
+    setCurrStep(n)
+    setPsPtr(n)
+    setCurrGraph(renderState())
+  }
 
   return (
     <div id="pageContainer">
@@ -48,7 +54,7 @@ export default function Blockly() {
           height={500}
           margin={10}
         />
-        <Slider min={0} max={numSteps} dots onChange={setCurrStep} value={currStep}/>
+        <Slider min={0} max={numSteps} dots onChange={setStep} value={currStep}/>
       </div>
       <div id="blocklyDiv" ref={blocklyDivRef}></div>
       
