@@ -50,14 +50,11 @@ export function resetEnv() {
     prevStates = []
 }
 export function setupForcedMain() {
-    forcedMain = new Force(env.lookup("main"))
+    forcedMain = new Force(env.lookup("main").elimFnVars())
     env.values[0].set("main", forcedMain)
     prevStates.push(_.cloneDeep(env))
     console.log("EE", env)
     tlEnvs = []
-    for (var k of env.values[0].keys()) {
-        tlEnvs.push(k)
-    }
 }
 export function addToEnv(k, v) {env.set(k, v)}
 
@@ -82,6 +79,7 @@ class Value extends FIRNode {
     evalOne(): Value {throw Error("aaa")}
     isEvaluated(): boolean {throw Error("aaa")}
     asNode(): Node {throw Error("aaa")}
+    elimFnVars(): Value {throw Error("aaa")}
 }
 
 class NullValue extends Value {
@@ -96,6 +94,7 @@ class NullValue extends Value {
 
 export class Var extends Value {
     name: string
+    overr: Value | null = null
 
     constructor(name: string) {
         super()
@@ -103,13 +102,33 @@ export class Var extends Value {
     }
 
     evalOne(): Value {
+        if (this.overr) {
+            return this.overr.evalOne()
+        }
         return env.lookup(this.name)
     }
     isEvaluated(): boolean {
+        if (this.overr) {
+            return this.overr.isEvaluated()
+        }
         return env.lookup(this.name).isEvaluated()   
     }
     asNode(): Node {
         return {name: this.name}
+    }
+    elimFnVars(): Value {
+            console.log("ME ME", this)
+        if (this.name.length == 1) {
+            var a = env.lookup(this.name).elimFnVars()
+            this.overr = a
+            return a
+        } else {
+            try{
+            env.set(this.name, env.lookup(this.name).elimFnVars())
+            } catch {}
+            
+            return this
+        }
     }
 }
 
@@ -140,6 +159,11 @@ export class DataValue extends Value {
             name: "Data: " + this.name,
             children: this.values.map(x => x.asNode())
         }
+    }
+    elimFnVars(): Value {
+        for (var i = 0; i < this.values.length; i++) {
+               this.values[i] = this.values[i].elimFnVars() }
+        return this
     }
 }
 
@@ -178,6 +202,10 @@ export class DeconOption {
         var name = "Match " + this.nameMatch + " (across " + this.into.join(", ") + ")"
         var children = [this.to.asNode()]
         return {name: name, children: children}
+    }
+
+    elimFnVars() {
+        this.to = this.to.elimFnVars()
     }
 }
 
@@ -223,6 +251,11 @@ export class Deconstruct extends Value {
         from.name = "From "+ from.name
         var subChilds = this.options.map(x => x.asNode())
         return {name: "When", children: [from, {name: "Into", children: subChilds}]}
+    }
+    elimFnVars(): Value {
+        this.from = this.from.elimFnVars()
+        this.options.forEach(o => o.elimFnVars())
+        return this
     }
 }
 
@@ -305,6 +338,15 @@ export class Call extends Value {
         console.log(this)
         return {name: 'Call', children: this.params.map(x => x.asNode())}
     }
+    elimFnVars(): Value {
+        env.pushFrame()
+        for (var i = 0; i < this.params.length; i++) {
+            env.set(alpha[i], this.params[i])
+        }
+        this.func = this.func.elimFnVars()
+        env.popFrame()
+        return this
+    }
 }
 
 
@@ -322,6 +364,9 @@ export class InherentFun extends Value {
     evalOne() {return this}
     asNode() {
         return {name: this.hint + " (inherent function)"}
+    }
+    elimFnVars(): Value {
+        return this
     }
 
     // evalOne()
@@ -342,6 +387,9 @@ export class Lit extends Value {
     }
 
     evalOne(): Value {return this}
+    elimFnVars(): Value {
+        return this
+    }
 }
 
 
@@ -374,5 +422,9 @@ export class Force extends Value {
     }
     asNode(): Node {
         return this.value.asNode()
+    }
+    elimFnVars(): Value {
+        this.value = this.value.elimFnVars()
+        return this
     }
 }
