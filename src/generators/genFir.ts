@@ -48,16 +48,16 @@ export function genCodeFor(block) {
         console.log(block)
         const op = block.getField("OP").selectedOption[0]
         if (op == "+") {
-            return InherentFun((x, y) => (x + y))
+            return InherentFun((x, y) => (x + y), "+")
         }
         if (op == "-") {
-            return InherentFun((x, y) => (x + y))
+            return InherentFun((x, y) => (x + y), "-")
         }
         if (op == "*") {
-            return InherentFun((x, y) => (x * y))
+            return InherentFun((x, y) => (x * y), "*")
         }
         if (op == "/") {
-            return InherentFun((x, y) => (x / y))
+            return InherentFun((x, y) => (x / y), "/")
         }
         alert("I can't handle the operator " + op)
         throw Error()
