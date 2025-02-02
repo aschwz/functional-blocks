@@ -5,7 +5,6 @@
  */
 
 import * as Blockly from 'blockly';
-import {blocks} from './blocks/text';
 import { genericDataConstructor, genericTypeDeconstructor, typeBlocks } from './blocks/type';
 import {forBlock} from './generators/javascript';
 import {javascriptGenerator} from 'blockly/javascript';
@@ -17,7 +16,18 @@ import { builtinFns } from './blocks/builtinFns';
 import { functionBlocks } from './blocks/procedures';
 import { funcsFlyoutCallback } from './toolbox/funcs';
 import { genCodeFor } from './generators/genFir';
+import { addToEnv, Env, env, Force, forcedMain, renderState, resetEnv, setupForcedMain } from './generators/fir';
+import * as Save from './save'
 
+Blockly.serialization.registry.register(
+    "types_and_ctors",
+    {
+        save: Save.saveTypeCtors,
+        load: Save.loadTypeCtors,
+        clear: Save.clearTypes,
+        priority: 1000,
+    }
+)
 export var knownTypes = []
 export var knownFuncs = []
 export var knownVariableTypesCount = 0
@@ -26,28 +36,73 @@ export function setKVTC(x) {knownVariableTypesCount = x}
 export var knownVariableFuncsCount = 0
 export function setKVFC(x) {knownVariableFuncsCount = x}
 
+export var ws = null 
 
-// Register the blocks and generator with Blockly
-Blockly.common.defineBlocks(blocks);
-Blockly.common.defineBlocks(typeBlocks)
-Blockly.common.defineBlocks(builtinFns)
-Blockly.common.defineBlocks(functionBlocks)
-Object.assign(javascriptGenerator.forBlock, forBlock);
+var isSetupRun = false
+// since we import to react for compile and run, we need to delegate things
+export function setup() {
+    if (isSetupRun) return
+    isSetupRun = true
 
-// Set up UI elements and inject Blockly
-const codeDiv = document.getElementById('generatedCode').firstChild;
-const outputDiv = document.getElementById('output');
-const blocklyDiv = document.getElementById('blocklyDiv');
-export const ws = Blockly.inject(blocklyDiv, {toolbox});
+    // Register the blocks and generator with Blockly
+    Blockly.common.defineBlocks(typeBlocks)
+    Blockly.common.defineBlocks(builtinFns)
+    Blockly.common.defineBlocks(functionBlocks)
+    Object.assign(javascriptGenerator.forBlock, forBlock);
 
-ws.registerToolboxCategoryCallback('TYPES_PALETTE', typesFlyoutCallback)
-ws.registerToolboxCategoryCallback('FUNCS_PALETTE', funcsFlyoutCallback)
+    // Set up UI elements and inject Blockly
+    const codeDiv = document.getElementById('generatedCode').firstChild;
+    const outputDiv = document.getElementById('output');
+    const blocklyDiv = document.getElementById('blocklyDiv');
+
+    ws = Blockly.inject(blocklyDiv, {toolbox})
+
+    ws.registerToolboxCategoryCallback('TYPES_PALETTE', typesFlyoutCallback)
+    ws.registerToolboxCategoryCallback('FUNCS_PALETTE', funcsFlyoutCallback)
+
+    ws.addChangeListener(syncTypes)
+
+
+    // Load the initial state from storage and run the code.
+    console.log("loading!!!")
+    // load(ws);
+
+    // Every time the workspace changes state, save the changes to storage.
+    // ws.addChangeListener((e) => {
+    //     //   // UI events are things like scrolling, zooming, etc.
+    //     //   // No need to save after one of these.
+    //     if (e.isUiEvent) return;
+    //     save(ws);
+    // });
+
+}
+
+export function compile() {
+    resetEnv()
+    ws.getBlocksByType("defn_function").forEach(block => {
+        const fnName = block.getFieldValue("FUNCTIONNAME")
+        const compiledFunction = genCodeFor(block.getInputTargetBlock("FUNCTION"))
+        // addToEnv(fn)
+        env.set(fnName, compiledFunction)
+    })
+    setupForcedMain()
+    console.log(env)
+}
+export function run() {
+    console.log("Running")
+    if (!forcedMain.isEvaluated()) {
+        forcedMain.evalOne();
+    }
+    if ((new Force(forcedMain.value.func)).isEvaluated()) {
+        console.log("I'm done.")
+    }
+    renderState()
+}
 
 function syncTypes() {
+    console.log("sync-types")
     knownTypes = ws.getBlocksByType("defn_type")
     knownFuncs = ws.getBlocksByType("defn_function")
-
-    ws.getAllBlocks().forEach(b => genCodeFor(b))
 
     // ensure all knownTypes have impls
     knownTypes.forEach(type => {
@@ -56,10 +111,10 @@ function syncTypes() {
         genericTypeDeconstructor(type)
         genericDataConstructor(type)
         // type universe type constuctor
-        var block = Blockly.Blocks[`type_${type.getFieldValue('TYPENAME').toLowerCase()}`]
+        var block = Blockly.Blocks[`type_${type.getFieldValue('TYPENAME')}`]
         if (undefined == block) {
             // not found
-            Blockly.Blocks[`type_${type.getFieldValue('TYPENAME').toLowerCase()}`] = {
+            Blockly.Blocks[`type_${type.getFieldValue('TYPENAME')}`] = {
                 init: function() {
                     this.paramsCount = type.args
 
@@ -77,7 +132,7 @@ function syncTypes() {
             // ensure type count sync
             if (block.paramsCount != type.args) {
                 // cry.
-                Blockly.Blocks[`type_${type.getFieldValue('TYPENAME').toLowerCase()}`] = {
+                Blockly.Blocks[`type_${type.getFieldValue('TYPENAME')}`] = {
                     init: function() {
                         this.paramsCount = type.args
                         this.appendDummyInput()
@@ -94,11 +149,11 @@ function syncTypes() {
         }
     })
     knownFuncs.forEach(type => {
-        var block = Blockly.Blocks[`func_${type.getFieldValue('FUNCTIONNAME').toLowerCase()}`]
+        var block = Blockly.Blocks[`func_${type.getFieldValue('FUNCTIONNAME')}`]
         if (undefined == block) {
             // not found
             // functions as values
-            Blockly.Blocks[`func_${type.getFieldValue('FUNCTIONNAME').toLowerCase()}`] = {
+            Blockly.Blocks[`func_${type.getFieldValue('FUNCTIONNAME')}`] = {
                 init: function() {
                     this.paramsCount = type.args
 
@@ -112,43 +167,3 @@ function syncTypes() {
     })
 }
 
-ws.addChangeListener(syncTypes)
-
-// This function resets the code and output divs, shows the
-// generated code from the workspace, and evals the code.
-// In a real application, you probably shouldn't use `eval`.
-// const runCode = () => {
-//   const code = javascriptGenerator.workspaceToCode(ws);
-//   codeDiv.innerText = code;
-
-//   outputDiv.innerHTML = '';
-
-//   eval(code);
-// };
-
-// Load the initial state from storage and run the code.
-load(ws);
-// runCode();
-
-// Every time the workspace changes state, save the changes to storage.
-// ws.addChangeListener((e) => {
-//   // UI events are things like scrolling, zooming, etc.
-//   // No need to save after one of these.
-//   if (e.isUiEvent) return;
-//   save(ws);
-// });
-
-// // Whenever the workspace changes meaningfully, run the code again.
-// ws.addChangeListener((e) => {
-//   // Don't run the code when the workspace finishes loading; we're
-//   // already running it once when the application starts.
-//   // Don't run the code during drags; we might have invalid state.
-//   if (
-//     e.isUiEvent ||
-//     e.type == Blockly.Events.FINISHED_LOADING ||
-//     ws.isDragging()
-//   ) {
-//     return;
-//   }
-//   runCode();
-// });

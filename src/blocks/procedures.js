@@ -19,7 +19,6 @@ const defnFunction = {
     {
       type: 'input_value',
       name: 'FUNCTION',
-      check: 'Value',
     },
   ],
   // previousStatement: null,
@@ -38,12 +37,11 @@ const callFunc = {
         {
             "type": "input_value",
             "name": "FUNCTION",
-            "check": 'Value',
         },
     ],
     // previousStatement: null,
     // nextStatement: null,
-    output: "Value",
+    output: null,
     colour: 160,
     tooltip: '',
     helpUrl: '',
@@ -52,11 +50,13 @@ const callFunc = {
 };
 
 typeVarsNames(26).forEach(c => {
-    Blockly.Blocks["func_param_" + c] = {
-        init: function() {
-            this.appendDummyInput()
-                .appendField(c)
-            this.setOutput(true, 'Value')
+    if (Blockly.Blocks["func_param_"+c] == undefined) {
+        Blockly.Blocks["func_param_" + c] = {
+            init: function() {
+                this.appendDummyInput()
+                    .appendField(c)
+                this.setOutput(true)
+            }
         }
     }
 })

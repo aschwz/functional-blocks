@@ -42,10 +42,6 @@ export const toolbox = {
         },
         {
           kind: 'block',
-          type: 'logic_null',
-        },
-        {
-          kind: 'block',
           type: 'logic_ternary',
         },
       ],
@@ -181,44 +177,6 @@ export const toolbox = {
         },
         {
           kind: 'block',
-          type: 'math_number_property',
-          inputs: {
-            NUMBER_TO_CHECK: {
-              shadow: {
-                type: 'math_number',
-                fields: {
-                  NUM: 0,
-                },
-              },
-            },
-          },
-        },
-        {
-          kind: 'block',
-          type: 'math_round',
-          fields: {
-            OP: 'ROUND',
-          },
-          inputs: {
-            NUM: {
-              shadow: {
-                type: 'math_number',
-                fields: {
-                  NUM: 3.1,
-                },
-              },
-            },
-          },
-        },
-        {
-          kind: 'block',
-          type: 'math_on_list',
-          fields: {
-            OP: 'SUM',
-          },
-        },
-        {
-          kind: 'block',
           type: 'math_modulo',
           inputs: {
             DIVIDEND: {
@@ -239,86 +197,9 @@ export const toolbox = {
             },
           },
         },
-        {
-          kind: 'block',
-          type: 'math_constrain',
-          inputs: {
-            VALUE: {
-              shadow: {
-                type: 'math_number',
-                fields: {
-                  NUM: 50,
-                },
-              },
-            },
-            LOW: {
-              shadow: {
-                type: 'math_number',
-                fields: {
-                  NUM: 1,
-                },
-              },
-            },
-            HIGH: {
-              shadow: {
-                type: 'math_number',
-                fields: {
-                  NUM: 100,
-                },
-              },
-            },
-          },
-        },
-        {
-          kind: 'block',
-          type: 'math_random_int',
-          inputs: {
-            FROM: {
-              shadow: {
-                type: 'math_number',
-                fields: {
-                  NUM: 1,
-                },
-              },
-            },
-            TO: {
-              shadow: {
-                type: 'math_number',
-                fields: {
-                  NUM: 100,
-                },
-              },
-            },
-          },
-        },
-        {
-          kind: 'block',
-          type: 'math_random_float',
-        },
-        {
-          kind: 'block',
-          type: 'math_atan2',
-          inputs: {
-            X: {
-              shadow: {
-                type: 'math_number',
-                fields: {
-                  NUM: 1,
-                },
-              },
-            },
-            Y: {
-              shadow: {
-                type: 'math_number',
-                fields: {
-                  NUM: 1,
-                },
-              },
-            },
-          },
-        },
-      ],
+        ],
     },
+    /*
     {
       kind: 'category',
       name: 'Text',
@@ -610,6 +491,7 @@ export const toolbox = {
         },
       ],
     },
+    */
     {
       kind: 'category',
       name: 'Functional Builtins',

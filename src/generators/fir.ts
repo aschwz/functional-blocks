@@ -1,4 +1,4 @@
-class Env {
+export class Env {
     values: Map<String, Value>[] = [new Map()]
     pushFrame() {
         this.values.push(new Map())
@@ -7,27 +7,43 @@ class Env {
         this.values.pop()
     }
     lookup(k: string): Value {
-        for (var i = this.values.length - 1; i <= 0; i--) {
+        for (var i = this.values.length - 1; i >= 0; i--) {
             const map = this.values[i]
             if (map.has(k)) {
                 return map.get(k) as Value
             }
         }
-        return new NullValue()
+        console.log(env)
+        throw new Error("var " + k + " not found")
     }
     set(k: String, v: Value) {
         this.values[this.values.length - 1].set(k, v)
     }
 }
 
-var env = new Env()
+export var env = new Env()
+
+export var forcedMain = null
+
+export function resetEnv() {
+    env = new Env()
+}
+export function setupForcedMain() {
+    forcedMain = new Force(env.lookup("main"))
+}
+export function addToEnv(k, v) {env.set(k, v)}
+
+export function renderState() {
+    // eventually this will render this nicely but i eepy
+    console.log("Rendering state:", env)
+}
 
 class FIRNode {
     
 }
 
 class Value extends FIRNode {
-    evalOne(): Value {return new NullValue()}
+    evalOne(): Value {throw Error("aaa")}
     isEvaluated(): boolean {throw Error("aaa")}
 }
 
@@ -41,23 +57,7 @@ class NullValue extends Value {
     }
 }
 
-class App extends Value {
-    target: Value
-    args: Value[]
-
-    evalOne(): Value {
-        
-        return new NullValue()
-    }
-
-    constructor(target: Value, args: Value[]) {
-        super()
-        this.target = target
-        this.args = args
-    }
-}
-
-class Var extends Value {
+export class Var extends Value {
     name: string
 
     constructor(name: string) {
@@ -68,9 +68,12 @@ class Var extends Value {
     evalOne(): Value {
         return env.lookup(this.name)
     }
+    isEvaluated(): boolean {
+        return env.lookup(this.name).isEvaluated()   
+    }
 }
 
-class DataValue extends Value {
+export class DataValue extends Value {
     name: string
     values: Value[]
     constructor(name: string, values: Value[]) {
@@ -78,7 +81,22 @@ class DataValue extends Value {
         this.name = name
         this.values = values
     }
+    evalOne(): Value {
+        for (var i = 0; i < this.values.length; i++)
+            if (!this.values[i].isEvaluated()) {
+                this.values[i] = this.values[i].evalOne()
+                return this
+            }
+            return this
+        }
+    isEvaluated(): boolean {
+        for (var v of this.values) {
+            if (!v.isEvaluated()) return false
+        }   
+        return true
+    }
 }
+
 
 function max(x: number, y: number) {
     if (x > y) return x
@@ -95,9 +113,9 @@ export class DeconOption {
         for (var i = 0; i < max(this.into.length, inp.values.length); i++) {
             env.set(this.into[i], inp.values[i])
         }
-        var evaluated = this.to.evalOne()
+        this.to = this.to.evalOne()
         env.popFrame()
-        return evaluated
+        return this.to 
     }
 
     isEvaluated() {
@@ -131,7 +149,7 @@ export class Deconstruct extends Value {
 
     evalOne(): Value {
         if (!this.from.isEvaluated()) {
-            this.from.evalOne()
+            this.from = this.from.evalOne()
             return this
         } else {
             if (this.from instanceof DataValue) {
@@ -152,49 +170,52 @@ export class Deconstruct extends Value {
 
 const alpha = "abcdefghijklmnopqrstuvwxyz"
 
-class Fun extends Value {
-    // params: number
-    body: Value
+// class Fun extends Value {
+//     // params: number
+//     body: Value
 
-    constructor(params: number, body: Value) {
-        super()
-        // this.params = params
-        this.body = body
-    }
+//     constructor(params: number, body: Value) {
+//         super()
+//         // this.params = params
+//         this.body = body
+//     }
 
-    evalOne() {
-        return this.body.evalOne()
-    }
-    isEvaluated(): boolean {
-        return this.body.isEvaluated()
-    }
-}
+//     evalOne() {
+//         return this.body.evalOne()
+//     }
+//     isEvaluated(): boolean {
+//         return this.body.isEvaluated()
+//     }
+// }
 
-class Call extends Value {
-    func: string
+export class Call extends Value {
+    func: Value
     params: Value[]
-    constructor(func: string, params: Value[]) {
+    constructor(func: Value, params: Value[]) {
         super()
         this.func = func
         this.params = params
     }
     evalOne(): Value {
-        var toEval = env.lookup(this.func)
+        // if (!this.func.isEvaluated()) {
+        //     return this.func.evalOne()
+        // }
+        // var toEval = env.lookup(this.func)
         env.pushFrame()
         for (var i = 0; i < this.params.length; i++) {
             env.set(alpha[i], this.params[i])
         }
-        const evaled = toEval.evalOne()
+        this.func = this.func.evalOne()
         env.popFrame()
-        return evaled
+        return this.func
     }
     isEvaluated(): boolean {
-        var toEval = env.lookup(this.func)
+        // var toEval = env.lookup(this.func)
         env.pushFrame()
         for (var i = 0; i < this.params.length; i++) {
             env.set(alpha[i], this.params[i])
         }
-        const evaled = toEval.isEvaluated()
+        const evaled = this.func.isEvaluated()
         env.popFrame()
         return evaled
     }
@@ -217,16 +238,6 @@ class InherentFun extends Callable {
     // evalOne()
 }
 
-class DataType extends Value {
-    ctorName: String
-    values: Value[]
-
-    constructor(ctorName: String, values: Value[]) {
-        super()
-        this.ctorName = ctorName
-        this.values = values
-    }
-}
 
 class Lit extends Value {
 
@@ -234,4 +245,32 @@ class Lit extends Value {
 
 class IntLit extends Lit {
     
+}
+
+
+export class Force extends Value {
+    value: Value
+    constructor(value: Value) {
+        super()
+        this.value = value
+    }
+    isEvaluated(): boolean {
+        if (this.value instanceof Lit) {
+            return true
+        }
+        if (this.value instanceof DataValue) {
+            const subValues = (this.value as DataValue).values.map(v => new Force(v))
+            for (var i = 0; i < subValues.length; i++) {
+                if (!subValues[i].isEvaluated()) {
+                    return false
+                }
+            }
+            return true
+        }
+        return false
+    }
+    evalOne(): Value {
+        this.value = this.value.evalOne()   
+        return this.value
+    }
 }

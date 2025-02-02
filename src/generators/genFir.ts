@@ -1,4 +1,4 @@
-import {Deconstruct, DeconOption} from "./fir.ts"
+import {Deconstruct, DeconOption, DataValue, Call, Var} from "./fir.ts"
 
 var perBlock = {}
 
@@ -6,7 +6,7 @@ export function genCodeFor(block) {
     var ty = block.type
     console.log("GEN", ty)
     if (ty == "deconstruct_type_into") {
-        const valueToDeconstruct = block.getInputTargetBlock("VALUE")
+        const valueToDeconstruct = genCodeFor(block.getInputTargetBlock("VALUE"))
         var waysToDeconstruct = []
         var connection = block.getInputTargetBlock("CONDS")
         console.log("conn", connection)
@@ -19,7 +19,7 @@ export function genCodeFor(block) {
         var paths = []
         // Conds should all be type_decon_xyz
         conds.forEach(decon => {
-            const final = decon.getInputTargetBlock("VALUE")
+            const final = genCodeFor(decon.getInputTargetBlock("VALUE"))
             const from = decon.deconTyName
             // all the Ix inputs should be variables?
             var binds = []
@@ -43,6 +43,48 @@ export function genCodeFor(block) {
         var decon = new Deconstruct(valueToDeconstruct, paths)
         console.log("DECON BABEY", decon)
         return decon
+    }
+    if (ty == "call_func") {
+        const target = genCodeFor(block.getInputTargetBlock("FUNCTION"))
+        var args = []
+        var n = 0
+        var a0 = block.getInputTargetBlock("ARG_" + n)
+        while (a0) {
+            args.push(genCodeFor(a0))
+            n++
+            a0 = block.getInputTargetBlock("ARG_" + n)
+        }
+        return new Call(target, args)
+    }
+    if (ty.startsWith("func_param_")) {
+        const pName = ty.split("func_param_")[1]
+        // TODO: maybe flatten this out if this is too much indirection
+        return new Var(pName)
+    }
+    if (ty.startsWith("func_")) {
+        const pName = ty.split("func_")[1]
+        console.log("pname", pName)
+        // TODO: maybe flatten this out if this is too much indirection
+        var v1 = new Var(pName)
+        console.log("v1", v1)
+        return v1
+    }
+    if (ty.startsWith("type_constr_")) {
+        const pName = ty.split("type_constr_")[1]
+        var values = []
+        var n = 0
+        var a0 = block.getInputTargetBlock("I_" + n)
+        while (a0) {
+            values.push(genCodeFor(a0))
+            n++
+            a0 = block.getInputTargetBlock("I_" + n)
+        }
+        return new DataValue(pName, values)
+
+    }
+    else {
+        alert("I cannot compile " + ty)
+        throw new Error()
     }
 }
 

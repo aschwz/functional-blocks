@@ -39,7 +39,7 @@ export var typesFlyoutCallback = function(workspace) {
     knownTypes.forEach(x => {
         blockList.push({
             kind: 'block',
-            type: "type_" + x.getFieldValue('TYPENAME').toLowerCase()
+            type: "type_" + x.getFieldValue('TYPENAME')
         })
         blockList.push({
             kind: 'block',

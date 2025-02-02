@@ -43,12 +43,12 @@ const defnType = {
 const boolType = {
     type: 'type_builtin_bool',
     message0: 'Bool',
-    output: 'Type',
+    output: null,
 }
 const floatType = {
     type: 'type_builtin_float',
     message0: 'Float',
-    output: 'Type',
+    output: null,
 }
 
 const typeParamsContainer = {
@@ -77,10 +77,10 @@ const typeParamsParam = {
 const deconstructBlock = {
     type: 'deconstruct_type_into',
     message0: 'when %1 %2',
+    output: null,
     args0: [{
         "type": "input_value",
         "name": "VALUE",
-        "check": "Value"
     },
         {
             "type": "input_statement",
@@ -91,21 +91,21 @@ const deconstructBlock = {
 Blockly.Blocks["sum_type"] = {
     init: function() {
         this.appendValueInput('T1')
-            .setCheck('Type')
             .appendField('Sum')
         this.appendValueInput('T2')
-            .setCheck('Type')
-        this.setOutput(true, 'Type')
+        this.setOutput(true)
         this.setColour(160)       
     }
 }
 
 typeVarsNames(26).forEach(c => {
-    Blockly.Blocks["type_param_" + c] = {
-        init: function() {
-            this.appendDummyInput()
-                .appendField(c)
-            this.setOutput(true, 'Type')
+    if(Blockly.Blocks["type_param_" + c] == undefined) {
+        Blockly.Blocks["type_param_" + c] = {
+            init: function() {
+                this.appendDummyInput()
+                    .appendField(c)
+                this.setOutput(true)
+            }
         }
     }
 })
@@ -113,6 +113,9 @@ typeVarsNames(26).forEach(c => {
 export function genericTypeDeconstructor(ty) {
     var tyName = ty.getFieldValue("TYPENAME")
     var numDeconstrs = ty.products
+    genericTypeDeconstructorInternals(tyName, numDeconstrs)
+}
+export function genericTypeDeconstructorInternals(tyName, numDeconstrs) {
     Blockly.Blocks["type_decon_" + tyName] = {
         init: function() {
             this.deconTyName = tyName
@@ -132,6 +135,9 @@ export function genericTypeDeconstructor(ty) {
 export function genericDataConstructor(ty) {
     var tyName = ty.getFieldValue("TYPENAME")
     var numProds = ty.products
+    genericDataConstructorInternals(tyName, numProds)
+}
+export function genericDataConstructorInternals(tyName, numProds) {
     Blockly.Blocks["type_constr_" + tyName] = {
         init: function() {
             this.deconTyName = tyName
@@ -235,9 +241,9 @@ Blockly.Extensions.registerMutator(
                 var connection = this.getInput('PROD_' + i)
                 if (connection) {
                     connection = connection.connection.targetConnection;
-                if (connection && connections.indexOf(connection) == -1) {
-                    connection.disconnect();
-                }
+                    if (connection && connections.indexOf(connection) == -1) {
+                        connection.disconnect();
+                    }
                 }
             }
 
@@ -251,7 +257,7 @@ Blockly.Extensions.registerMutator(
                 if (!this.getInput('PROD_' + i)) {
                     const input = this.appendValueInput('PROD_' + i)
                     // if (i === 0) {
-                        // input.appendField(Msg['LISTS_CREATE_WITH_INPUT_WITH']);
+                    // input.appendField(Msg['LISTS_CREATE_WITH_INPUT_WITH']);
                     // }
                 }
             }

@@ -35,7 +35,7 @@ export var funcsFlyoutCallback = function(workspace) {
     
     knownFuncs.forEach(x => blockList.push({
         kind: 'block',
-        type: "func_" + x.getFieldValue('FUNCTIONNAME').toLowerCase()
+        type: "func_" + x.getFieldValue('FUNCTIONNAME')
     }));
   return blockList;
 };
