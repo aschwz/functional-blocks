@@ -21,6 +21,11 @@ export var typesFlyoutCallback = function(workspace) {
             kind: 'block',
             type: 'type_builtin_float',
         },
+        {
+            kind: 'block',
+            type: 'deconstruct_type_into'
+        }
+        
     ];
 
     typeVarsNames(knownVariableTypesCount).forEach(c => {
@@ -31,9 +36,15 @@ export var typesFlyoutCallback = function(workspace) {
     })
     
     console.log(Blockly.Blocks)
-    knownTypes.forEach(x => blockList.push({
-        kind: 'block',
-        type: "type_" + x.getFieldValue('TYPENAME').toLowerCase()
-    }));
+    knownTypes.forEach(x => {
+        blockList.push({
+            kind: 'block',
+            type: "type_" + x.getFieldValue('TYPENAME').toLowerCase()
+        })
+        blockList.push({
+            kind: 'block',
+            type: "type_decon_" + x.getFieldValue("TYPENAME")
+        })
+    });
   return blockList;
 };

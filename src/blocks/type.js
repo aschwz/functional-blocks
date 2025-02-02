@@ -74,6 +74,20 @@ const typeParamsParam = {
     // }
 }
 
+const deconstructBlock = {
+    type: 'deconstruct_type_into',
+    message0: 'when %1 %2',
+    args0: [{
+        "type": "input_value",
+        "name": "VALUE",
+        "check": "Value"
+    },
+        {
+            "type": "input_statement",
+            "name": "CONDS",
+        }]
+}
+
 Blockly.Blocks["sum_type"] = {
     init: function() {
         this.appendValueInput('T1')
@@ -95,6 +109,25 @@ typeVarsNames(26).forEach(c => {
         }
     }
 })
+
+export function genericTypeDeconstructor(ty) {
+    var tyName = ty.getFieldValue("TYPENAME")
+    var numDeconstrs = ty.products
+    Blockly.Blocks["type_decon_" + tyName] = {
+        init: function() {
+            this.deconTyName = tyName
+            this.setNextStatement(true)
+            this.setPreviousStatement(true)
+            this.appendDummyInput()
+                .appendField("is " + tyName)
+            for (var i = 0; i < numDeconstrs; i++) {
+                this.appendValueInput('I_' + i)
+            }
+            this.appendValueInput('VALUE')
+                .appendField("into")
+        }
+    }
+}
 
 Blockly.Extensions.registerMutator(
     'type_multiparam_mutator',
@@ -225,5 +258,5 @@ Blockly.Extensions.registerMutator(
 // This does not register their definitions with Blockly.
 // This file has no side effects!
 export const typeBlocks = Blockly.common.createBlockDefinitionsFromJsonArray([
-    defnType, typeParamsContainer, typeParamsParam, boolType, floatType,
+    defnType, typeParamsContainer, typeParamsParam, boolType, floatType, deconstructBlock
 ]);

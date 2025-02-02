@@ -6,7 +6,7 @@
 
 import * as Blockly from 'blockly';
 import {blocks} from './blocks/text';
-import { typeBlocks } from './blocks/type';
+import { genericTypeDeconstructor, typeBlocks } from './blocks/type';
 import {forBlock} from './generators/javascript';
 import {javascriptGenerator} from 'blockly/javascript';
 import {save, load} from './serialization';
@@ -16,6 +16,7 @@ import './index.css';
 import { builtinFns } from './blocks/builtinFns';
 import { functionBlocks } from './blocks/procedures';
 import { funcsFlyoutCallback } from './toolbox/funcs';
+import { genCodeFor } from './generators/genFir';
 
 export var knownTypes = []
 export var knownFuncs = []
@@ -46,8 +47,13 @@ function syncTypes() {
     knownTypes = ws.getBlocksByType("defn_type")
     knownFuncs = ws.getBlocksByType("defn_function")
 
+    ws.getAllBlocks().forEach(b => genCodeFor(b))
+
     // ensure all knownTypes have impls
     knownTypes.forEach(type => {
+            
+        console.log("TYP", type)
+        genericTypeDeconstructor(type)
         var block = Blockly.Blocks[`type_${type.getFieldValue('TYPENAME').toLowerCase()}`]
         if (undefined == block) {
             // not found
