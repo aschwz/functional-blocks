@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Slider } from 'antd'
 import { compile, run, setup } from './index'
-
 
 export default function Blockly() {
   const [numSteps, setNumSteps] = useState<number>(0)
   const [currStep, setCurrStep] = useState<number>(0)
 
+  const blocklyDivRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
-    setup()
+    if (blocklyDivRef.current) setup(blocklyDivRef.current!)
     setNumSteps(20)
-  }, [])
+  }, [blocklyDivRef])
 
   const handleCompile = () => {
     console.log('Compile clicked');
@@ -32,7 +33,7 @@ export default function Blockly() {
         <div id="output"></div>
         <Slider min={0} max={numSteps} dots onChange={setCurrStep} />
       </div>
-      <div id="blocklyDiv"></div>
+      <div id="blocklyDiv" ref={blocklyDivRef}></div>
       
       {/* Action Buttons Container */}
       <div style={{
