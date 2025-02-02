@@ -28,19 +28,21 @@ export default function Blockly() {
     <div id="pageContainer">
       <div id="outputPane">
         <Tree
-          data={{
-            name: ':',
-            children: [
-              { name: '1' },
-              {
-                name: ':',
-                children: [
-                  { name: '2' },
-                  { name: ':', children: [{ name: '4' }, { name: '5' }] },
-                ],
-              },
-            ],
-          }}
+          data={[
+            {
+              name: ':',
+              children: [
+                { name: '1' },
+                {
+                  name: ':',
+                  children: [
+                    { name: '2' },
+                    { name: ':', children: [{ name: '4' }, { name: '5' }] },
+                  ],
+                },
+              ],
+            },
+          ]}
           width={300}
           height={500}
           margin={10}
