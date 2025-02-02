@@ -257,11 +257,16 @@ class InherentFun extends Value {
 
 class Lit extends Value {
 
+    data: any
+
+    constructor(data: any) {
+        super()
+        this.data = data
+    }
+    isEvaluated(): boolean {return true}
+
 }
 
-class IntLit extends Lit {
-    
-}
 
 
 export class Force extends Value {
