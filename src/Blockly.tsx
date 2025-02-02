@@ -29,9 +29,9 @@ export default function Blockly() {
     console.log('Compile clicked');
     compile()
     console.log("CRS", renderState())
-    setCurrGraph(renderState())
         setNumSteps(0)
-        setCurrStep(0)
+        setStep(0)
+    setCurrGraph(renderState())
   };
 
   const handleRun = () => {

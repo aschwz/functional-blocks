@@ -12,12 +12,14 @@ export default function Tree({
   data,
   width,
   height,
-  margin = 50,
+  marginx = 10,
+  marginy = -80
 }: {
   data: Node[]
   width: number
   height: number
-  margin: number
+  marginx: number
+  marginy: number
 }) {
   const root = d3.hierarchy<Node>({ name: '', dummy: true, children: data })
   
@@ -36,7 +38,8 @@ export default function Tree({
   // Adjust tree layout with custom node separation
   const treeLayout = d3
     .tree<Node>()
-    .size([width - margin * 2, height - margin * 2])
+    .size([width - 20, height - 20])
+    // .size([width - margin * 2, height - margin * 2])
     .separation((a, b) => {
       // Increase separation between nodes based on their widths
       const baseDistance = 1.2; // Minimum separation
@@ -52,7 +55,7 @@ export default function Tree({
 
   return (
     <svg width={width} height={height}>
-      <g transform={`translate(${margin},${margin})`}>
+      <g transform={`translate(${marginx},${marginy})`}>
         {/* Draw links */}
         {root
           .links()
