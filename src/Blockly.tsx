@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Slider } from 'antd'
 import { compile, doTimeTravel, run, setup } from './index'
 import Tree, {Node} from './Tree'
-import { prevStates, psPtr, renderState } from './generators/fir'
+import { prevStates, psPtr, renderState, setPsPtr } from './generators/fir'
 import OpenAI from 'openai'
 import { ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam } from 'openai/resources/chat'
 
@@ -28,6 +28,7 @@ export default function Blockly() {
   const handleCompile = () => {
     console.log('Compile clicked');
     compile()
+    console.log("CRS", renderState())
     setCurrGraph(renderState())
         setNumSteps(0)
         setCurrStep(0)
@@ -36,10 +37,13 @@ export default function Blockly() {
   const handleRun = () => {
     console.log('Run clicked');
     run()
-    console.log(prevStates.length)
+    console.log("PPTR", prevStates.length, psPtr)
         setNumSteps(prevStates.length - 1)
         setCurrStep(psPtr)
+        var rs = renderState()
+        console.log("RS", rs)
         setCurrGraph(renderState())
+        console.log("currg", currGraph)
   };
 
   const timeTravel = (n: number) => {
@@ -120,7 +124,7 @@ export default function Blockly() {
         padding: '12px'
       }}>
         <div style={{
-          height: '200px',
+          height: '150px',
           overflowY: 'auto',
           marginBottom: '10px',
           border: '1px solid #eee',

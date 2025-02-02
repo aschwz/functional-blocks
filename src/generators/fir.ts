@@ -55,6 +55,9 @@ export function setupForcedMain() {
     prevStates.push(_.cloneDeep(env))
     console.log("EE", env)
     tlEnvs = []
+    for (var k of env.values[0].keys()) {
+        tlEnvs.push(k)
+    }
 }
 export function addToEnv(k, v) {env.set(k, v)}
 
