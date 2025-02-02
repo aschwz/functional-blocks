@@ -82,6 +82,7 @@ export function compile() {
 }
 export function run() {
     console.log("Running")
+    console.log(psPtr, prevStates)
 
     if (psPtr < prevStates.length-1) {
         setPsPtr(psPtr + 1)
@@ -96,6 +97,7 @@ export function run() {
     if ((new Force(forcedMain.value.func)).isEvaluated()) {
         console.log("I'm done.")
     }
+    console.log(psPtr, prevStates)
     renderState()
 }
 

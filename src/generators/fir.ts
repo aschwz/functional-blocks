@@ -51,6 +51,7 @@ export function resetEnv() {
 }
 export function setupForcedMain() {
     forcedMain = new Force(env.lookup("main"))
+    env.values[0].set("main", forcedMain)
     prevStates.push(_.clone(env))
     console.log("EE", env)
     tlEnvs = []
@@ -256,20 +257,22 @@ export class Call extends Value {
     evalOne(): Value {
         // special case: if this is an inherent fn then this needs to be strict
         if (this.func instanceof InherentFun) {
+            console.log("IHFUN")
+            console.log(this)
             // eval args first
             for (var i = 0; i < this.params.length; i++) {
                 if (!this.params[i].isEvaluated()) {
                     this.params[i] = this.params[i].evalOne()
                     return this
                 } else {
-                    if (this.params[i] !instanceof Lit) {
+                    if (!(this.params[i] instanceof Lit)) {
                         throw Error("Can't inherent on a non-lit")
                     }
                 }
             }
             // they're all lit
             var values = this.params.map(v => (v as Lit).data)
-            return this.func.body(...values)
+            return new Lit(this.func.body(...values))
         }
         if (this.func.isEvaluated()) {
             return this.func
@@ -299,6 +302,7 @@ export class Call extends Value {
     asNode(): Node {
         var targetNode = this.func.asNode()
         targetNode.name = "Function: " + targetNode.name
+        console.log(this)
         return {name: 'Call', children: this.params.map(x => x.asNode())}
     }
 }
@@ -336,6 +340,8 @@ export class Lit extends Value {
     asNode(): Node {
         return {name: this.data.toString()}
     }
+
+    evalOne(): Value {return this}
 }
 
 
@@ -363,6 +369,7 @@ export class Force extends Value {
     }
     evalOne(): Value {
         this.value = this.value.evalOne()   
+        console.log("Forced into", this)
         return this.value
     }
     asNode(): Node {

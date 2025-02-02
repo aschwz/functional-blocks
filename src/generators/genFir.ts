@@ -45,20 +45,28 @@ export function genCodeFor(block) {
     if (ty == "math_arithmetic") {
         console.log(block)
         const op = block.getField("OP").selectedOption[0]
+        const inp1 = genCodeFor(block.getInputTargetBlock("A"))
+        const inp2 = genCodeFor(block.getInputTargetBlock("B"))
+        var ihf = null
         if (op == "+") {
-            return InherentFun((x, y) => (x + y), "+")
+            ihf = new InherentFun((x, y) => {
+                console.log(x, y, x+y)
+                    return (x + y)}, "+")
         }
         if (op == "-") {
-            return InherentFun((x, y) => (x + y), "-")
+            ihf = new InherentFun((x, y) => (x + y), "-")
         }
         if (op == "*") {
-            return InherentFun((x, y) => (x * y), "*")
+            ihf = new InherentFun((x, y) => (x * y), "*")
         }
         if (op == "/") {
-            return InherentFun((x, y) => (x / y), "/")
+            ihf = new InherentFun((x, y) => (x / y), "/")
         }
-        alert("I can't handle the operator " + op)
-        throw Error()
+        if (ihf === null) {
+            alert("I can't handle the operator " + op)
+            throw Error()
+        }
+        return new Call(ihf, [inp1, inp2])
     }
     if (ty == "call_func") {
         const target = genCodeFor(block.getInputTargetBlock("FUNCTION"))
@@ -103,7 +111,7 @@ export function genCodeFor(block) {
         return new Var(name)
     }
     if (ty == "math_number") {
-        return new Lit(ty.getFieldValue("NUM"))
+        return new Lit(block.getFieldValue("NUM"))
     }
     alert("I cannot compile " + ty)
     throw new Error()

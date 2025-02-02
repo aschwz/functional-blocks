@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Slider } from 'antd'
 import { compile, doTimeTravel, run, setup } from './index'
 import Tree, {Node} from './Tree'
-import { prevStates, renderState } from './generators/fir'
+import { prevStates, psPtr, renderState } from './generators/fir'
 
 export default function Blockly() {
   const [numSteps, setNumSteps] = useState<number>(0)
@@ -20,6 +20,8 @@ export default function Blockly() {
     console.log('Compile clicked');
     compile()
     setCurrGraph(renderState())
+        setNumSteps(0)
+        setCurrStep(0)
   };
 
   const handleRun = () => {
@@ -28,6 +30,7 @@ export default function Blockly() {
     setCurrGraph(renderState())
     console.log(prevStates.length)
         setNumSteps(prevStates.length - 1)
+        setCurrStep(psPtr)
   };
 
   const timeTravel = (n: number) => {
@@ -45,7 +48,7 @@ export default function Blockly() {
           height={500}
           margin={10}
         />
-        <Slider min={0} max={numSteps} dots onChange={setCurrStep} />
+        <Slider min={0} max={numSteps} dots onChange={setCurrStep} value={currStep}/>
       </div>
       <div id="blocklyDiv" ref={blocklyDivRef}></div>
       
