@@ -4,6 +4,8 @@ export interface Node {
   name: string
   dummy?: true
   children?: Node[]
+  width?: number
+  height?: number
 }
 
 export default function Tree({
@@ -18,9 +20,34 @@ export default function Tree({
   margin: number
 }) {
   const root = d3.hierarchy<Node>({ name: '', dummy: true, children: data })
+  
+  // Calculate node dimensions for each node
+  root.each(node => {
+    if (!node.data.dummy) {
+      const textLength = node.data.name.length;
+      const fontSize = Math.min(14, 14 - textLength * 0.2);
+      const padding = 8;
+      const textWidth = textLength * fontSize * 0.6;
+      node.data.width = textWidth + padding * 2;
+      node.data.height = fontSize * 2;
+    }
+  });
+
+  // Adjust tree layout with custom node separation
   const treeLayout = d3
     .tree<Node>()
     .size([width - margin * 2, height - margin * 2])
+    .separation((a, b) => {
+      // Increase separation between nodes based on their widths
+      const baseDistance = 1.2; // Minimum separation
+      if (!a.data.dummy && !b.data.dummy) {
+        const aWidth = a.data.width ?? 0;
+        const bWidth = b.data.width ?? 0;
+        return (aWidth + bWidth) / 2 * baseDistance / 50;
+      }
+      return baseDistance;
+    });
+
   treeLayout(root)
 
   return (
