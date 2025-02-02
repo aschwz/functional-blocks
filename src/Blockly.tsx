@@ -1,52 +1,54 @@
 import { useEffect, useRef, useState } from 'react'
 import { Slider } from 'antd'
-import { compile, run, setup } from './index'
-import Tree from './Tree'
+import { compile, doTimeTravel, run, setup } from './index'
+import Tree, {Node} from './Tree'
+import { prevStates, psPtr, renderState } from './generators/fir'
+
 export default function Blockly() {
   const [numSteps, setNumSteps] = useState<number>(0)
   const [currStep, setCurrStep] = useState<number>(0)
+  const [currGraph, setCurrGraph] = useState<Node[]>([])
 
   const blocklyDivRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (blocklyDivRef.current) setup(blocklyDivRef.current!)
-    setNumSteps(20)
+    // setNumSteps(20)
   }, [blocklyDivRef])
 
   const handleCompile = () => {
     console.log('Compile clicked');
     compile()
+    setCurrGraph(renderState())
+        setNumSteps(0)
+        setCurrStep(0)
   };
 
   const handleRun = () => {
     console.log('Run clicked');
     run()
+    setCurrGraph(renderState())
+    console.log(prevStates.length)
+        setNumSteps(prevStates.length - 1)
+        setCurrStep(psPtr)
   };
+
+  const timeTravel = (n: number) => {
+        console.log("travelling")
+        setCurrStep(n)
+        doTimeTravel(n)
+    }
 
   return (
     <div id="pageContainer">
       <div id="outputPane">
         <Tree
-          data={[
-            {
-              name: ':',
-              children: [
-                { name: '1' },
-                {
-                  name: ':',
-                  children: [
-                    { name: '2432423423' },
-                    { name: ':', children: [{ name: '423321412' }, { name: '53252353523' }] },
-                  ],
-                },
-              ],
-            },
-          ]}
+          data={currGraph}
           width={300}
           height={500}
           margin={10}
         />
-        <Slider min={0} max={numSteps} dots onChange={setCurrStep} />
+        <Slider min={0} max={numSteps} dots onChange={setCurrStep} value={currStep}/>
       </div>
       <div id="blocklyDiv" ref={blocklyDivRef}></div>
       

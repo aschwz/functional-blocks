@@ -143,60 +143,7 @@ export const toolbox = {
             },
           },
         },
-        {
-          kind: 'block',
-          type: 'math_single',
-          inputs: {
-            NUM: {
-              shadow: {
-                type: 'math_number',
-                fields: {
-                  NUM: 9,
-                },
-              },
-            },
-          },
-        },
-        {
-          kind: 'block',
-          type: 'math_trig',
-          inputs: {
-            NUM: {
-              shadow: {
-                type: 'math_number',
-                fields: {
-                  NUM: 45,
-                },
-              },
-            },
-          },
-        },
-        {
-          kind: 'block',
-          type: 'math_constant',
-        },
-        {
-          kind: 'block',
-          type: 'math_modulo',
-          inputs: {
-            DIVIDEND: {
-              shadow: {
-                type: 'math_number',
-                fields: {
-                  NUM: 64,
-                },
-              },
-            },
-            DIVISOR: {
-              shadow: {
-                type: 'math_number',
-                fields: {
-                  NUM: 10,
-                },
-              },
-            },
-          },
-        },
+        
         ],
     },
     /*

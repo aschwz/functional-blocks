@@ -1,6 +1,4 @@
-import {Deconstruct, DeconOption, DataValue, Call, Var} from "./fir.ts"
-
-var perBlock = {}
+import {Deconstruct, DeconOption, DataValue, Call, Var, InherentFun, Lit} from "./fir.ts"
 
 export function genCodeFor(block) {
     var ty = block.type
@@ -44,6 +42,32 @@ export function genCodeFor(block) {
         console.log("DECON BABEY", decon)
         return decon
     }
+    if (ty == "math_arithmetic") {
+        console.log(block)
+        const op = block.getField("OP").selectedOption[0]
+        const inp1 = genCodeFor(block.getInputTargetBlock("A"))
+        const inp2 = genCodeFor(block.getInputTargetBlock("B"))
+        var ihf = null
+        if (op == "+") {
+            ihf = new InherentFun((x, y) => {
+                console.log(x, y, x+y)
+                    return (x + y)}, "+")
+        }
+        if (op == "-") {
+            ihf = new InherentFun((x, y) => (x + y), "-")
+        }
+        if (op == "*") {
+            ihf = new InherentFun((x, y) => (x * y), "*")
+        }
+        if (op == "/") {
+            ihf = new InherentFun((x, y) => (x / y), "/")
+        }
+        if (ihf === null) {
+            alert("I can't handle the operator " + op)
+            throw Error()
+        }
+        return new Call(ihf, [inp1, inp2])
+    }
     if (ty == "call_func") {
         const target = genCodeFor(block.getInputTargetBlock("FUNCTION"))
         var args = []
@@ -80,16 +104,16 @@ export function genCodeFor(block) {
             a0 = block.getInputTargetBlock("I_" + n)
         }
         return new DataValue(pName, values)
-
     }
     if (ty == "variables_get") {
         var name = block.getField("VAR").selectedOption[0]
         console.log("variable", name)
         return new Var(name)
     }
-    else {
-        alert("I cannot compile " + ty)
-        throw new Error()
+    if (ty == "math_number") {
+        return new Lit(block.getFieldValue("NUM"))
     }
+    alert("I cannot compile " + ty)
+    throw new Error()
 }
 

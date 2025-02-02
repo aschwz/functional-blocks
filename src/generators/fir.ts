@@ -1,3 +1,7 @@
+import clone from 'just-clone'
+import { Node } from '../Tree'
+import * as _ from 'lodash'
+
 export class Env {
     values: Map<String, Value>[] = [new Map()]
     pushFrame() {
@@ -16,10 +20,26 @@ export class Env {
         console.log(env)
         throw new Error("var " + k + " not found")
     }
+    reverseLookup(k: string): Value {
+        for (var i = 0; i < this.values.length; i++) {
+            const map = this.values[i]
+            if (map.has(k)) {
+                return map.get(k) as Value
+            }
+        }
+        console.log(env)
+        throw new Error("var " + k + " not found")
+    }
     set(k: String, v: Value) {
         this.values[this.values.length - 1].set(k, v)
     }
 }
+
+export var prevStates: Env[] = []
+export var psPtr = 0
+export function setPsPtr(x) {psPtr = x}
+
+var tlEnvs: string[] = []
 
 export var env = new Env()
 
@@ -27,15 +47,31 @@ export var forcedMain = null
 
 export function resetEnv() {
     env = new Env()
+    prevStates = []
 }
 export function setupForcedMain() {
     forcedMain = new Force(env.lookup("main"))
+    env.values[0].set("main", forcedMain)
+    prevStates.push(_.clone(env))
+    console.log("EE", env)
+    tlEnvs = []
+    for (var k of env.values[0].keys()) {
+        tlEnvs.push(k)
+    }
 }
 export function addToEnv(k, v) {env.set(k, v)}
 
-export function renderState() {
+export function renderState(): Node[] {
     // eventually this will render this nicely but i eepy
-    console.log("Rendering state:", env)
+    console.log(prevStates, psPtr)
+    console.log("Rendering state:", prevStates[psPtr])
+    // broken but objectibely funny
+    console.log("TLE", tlEnvs)
+    var aaa = tlEnvs.map(x => {
+        return {name: x, children: [prevStates[psPtr].reverseLookup(x).asNode()]}
+    })
+    console.log("aaa", aaa)
+    return aaa
 }
 
 class FIRNode {
@@ -45,6 +81,7 @@ class FIRNode {
 class Value extends FIRNode {
     evalOne(): Value {throw Error("aaa")}
     isEvaluated(): boolean {throw Error("aaa")}
+    asNode(): Node {throw Error("aaa")}
 }
 
 class NullValue extends Value {
@@ -71,6 +108,9 @@ export class Var extends Value {
     isEvaluated(): boolean {
         return env.lookup(this.name).isEvaluated()   
     }
+    asNode(): Node {
+        return {name: this.name}
+    }
 }
 
 export class DataValue extends Value {
@@ -94,6 +134,12 @@ export class DataValue extends Value {
             if (!v.isEvaluated()) return false
         }   
         return true
+    }
+    asNode(): Node {
+        return {
+            name: "Data: " + this.name,
+            children: this.values.map(x => x.asNode())
+        }
     }
 }
 
@@ -126,6 +172,12 @@ export class DeconOption {
         this.nameMatch = nameMatch
         this.into = into
         this.to = to
+    }
+
+    asNode() {
+        var name = "Match " + this.nameMatch + " (across " + this.into.join(", ") + ")"
+        var children = [this.to.asNode()]
+        return {name: name, children: children}
     }
 }
 
@@ -166,6 +218,12 @@ export class Deconstruct extends Value {
             }
         }
     }
+    asNode(): Node {
+        var from = this.from.asNode()
+        from.name = "From "+ from.name
+        var subChilds = this.options.map(x => x.asNode())
+        return {name: "When", children: [from, {name: "Into", children: subChilds}]}
+    }
 }
 
 const alpha = "abcdefghijklmnopqrstuvwxyz"
@@ -199,18 +257,22 @@ export class Call extends Value {
     evalOne(): Value {
         // special case: if this is an inherent fn then this needs to be strict
         if (this.func instanceof InherentFun) {
+            console.log("IHFUN")
+            console.log(this)
             // eval args first
             for (var i = 0; i < this.params.length; i++) {
                 if (!this.params[i].isEvaluated()) {
                     this.params[i] = this.params[i].evalOne()
                     return this
                 } else {
-                    if (this.params[i] !instanceof Lit) {
+                    if (!(this.params[i] instanceof Lit)) {
                         throw Error("Can't inherent on a non-lit")
                     }
                 }
-                // they're all lit
             }
+            // they're all lit
+            var values = this.params.map(v => (v as Lit).data)
+            return new Lit(this.func.body(...values))
         }
         if (this.func.isEvaluated()) {
             return this.func
@@ -237,26 +299,36 @@ export class Call extends Value {
         env.popFrame()
         return evaled
     }
+    asNode(): Node {
+        var targetNode = this.func.asNode()
+        targetNode.name = "Function: " + targetNode.name
+        console.log(this)
+        return {name: 'Call', children: this.params.map(x => x.asNode())}
+    }
 }
 
 
-class InherentFun extends Value {
+export class InherentFun extends Value {
     body: (...args: any[]) => any
+    hint: string
 
-    constructor(fun: (...args: any[]) => any) {
+    constructor(fun: (...args: any[]) => any, hint: string) {
         super()
         this.body = fun
+        this.hint = hint
     }
 
     isEvaluated() {return true}
     evalOne() {return this}
+    asNode() {
+        return {name: this.hint + " (inherent function)"}
+    }
 
     // evalOne()
 }
 
 
-class Lit extends Value {
-
+export class Lit extends Value {
     data: any
 
     constructor(data: any) {
@@ -265,6 +337,11 @@ class Lit extends Value {
     }
     isEvaluated(): boolean {return true}
 
+    asNode(): Node {
+        return {name: this.data.toString()}
+    }
+
+    evalOne(): Value {return this}
 }
 
 
@@ -292,6 +369,10 @@ export class Force extends Value {
     }
     evalOne(): Value {
         this.value = this.value.evalOne()   
+        console.log("Forced into", this)
         return this.value
+    }
+    asNode(): Node {
+        return this.value.asNode()
     }
 }
