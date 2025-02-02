@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Slider } from 'antd'
 import { compile, run, setup } from './index'
+import Tree from './Tree'
 
 export default function Blockly() {
   const [numSteps, setNumSteps] = useState<number>(0)
@@ -26,11 +27,24 @@ export default function Blockly() {
   return (
     <div id="pageContainer">
       <div id="outputPane">
-        <pre id="generatedCode">
-          <code></code>
-          {currStep}
-        </pre>
-        <div id="output"></div>
+        <Tree
+          data={{
+            name: ':',
+            children: [
+              { name: '1' },
+              {
+                name: ':',
+                children: [
+                  { name: '2' },
+                  { name: ':', children: [{ name: '4' }, { name: '5' }] },
+                ],
+              },
+            ],
+          }}
+          width={300}
+          height={500}
+          margin={10}
+        />
         <Slider min={0} max={numSteps} dots onChange={setCurrStep} />
       </div>
       <div id="blocklyDiv" ref={blocklyDivRef}></div>
