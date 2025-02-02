@@ -82,6 +82,11 @@ export function genCodeFor(block) {
         return new DataValue(pName, values)
 
     }
+    if (ty == "variables_get") {
+        var name = block.getField("VAR").selectedOption[0]
+        console.log("variable", name)
+        return new Var(name)
+    }
     else {
         alert("I cannot compile " + ty)
         throw new Error()
