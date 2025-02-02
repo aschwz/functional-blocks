@@ -93,6 +93,7 @@ export function run() {
     if (!forcedMain.isEvaluated()) {
         forcedMain.evalOne();
     }
+    // broken
     if ((new Force(forcedMain.value.func)).isEvaluated()) {
         console.log("I'm done.")
     }

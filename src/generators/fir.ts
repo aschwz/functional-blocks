@@ -197,6 +197,9 @@ export class Call extends Value {
         this.params = params
     }
     evalOne(): Value {
+        if (this.func.isEvaluated()) {
+            return this.func
+        }
         // if (!this.func.isEvaluated()) {
         //     return this.func.evalOne()
         // }
@@ -207,7 +210,7 @@ export class Call extends Value {
         }
         this.func = this.func.evalOne()
         env.popFrame()
-        return this.func
+        return this
     }
     isEvaluated(): boolean {
         // var toEval = env.lookup(this.func)
